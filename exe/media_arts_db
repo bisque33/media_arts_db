@@ -1,0 +1,3 @@
+#!/usr/bin/env ruby
+
+require "media_arts_db"
