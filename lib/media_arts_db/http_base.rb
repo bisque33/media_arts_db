@@ -3,12 +3,11 @@ require "addressable/template"
 
 module MediaArtsDb
   class HttpBase
-    def get(uri, query)
-      uri_template = Addressable::Template.new("#{uri}{?query*}")
-      uri_template.expand(query)
+    def http_get(uri, query)
+      template = Addressable::Template.new("#{uri}{?query*}")
 
       begin
-        response = Net::HTTP.get(uri_template.uri)
+        response = Net::HTTP.get_response(template.expand(query))
       rescue => e
         raise RuntimeError, "#{e.message}\n\n#{e.backtrace}"
       end

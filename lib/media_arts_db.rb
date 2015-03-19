@@ -4,6 +4,7 @@ require "media_arts_db/http_base"
 require "media_arts_db/comic/comic"
 
 require "json"
+require "nokogiri"
 
 module MediaArtsDb
   def self.hello
