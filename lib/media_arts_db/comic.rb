@@ -41,9 +41,9 @@ module MediaArtsDb
 
     class << self
 
-      def search_by_keyword(title: nil, magazine: nil, author: nil, per: 100, offset: 0)
+      def search_by_keyword(title: nil, magazine: nil, author: nil, per: 100, page: 1)
         uri = MediaArtsDb.comic_search_uri
-        params = { per: per, offset: offset }
+        params = { per: per, page: page }
         if title
           params[:keyword_title] = title
           res_body = search_request(uri, params)
@@ -61,9 +61,9 @@ module MediaArtsDb
         end
       end
 
-      def search_book(options: nil, per: 100, offset: 0)
+      def search_book(options: nil, per: 100, page: 1)
         uri = MediaArtsDb.comic_search_uri
-        params = { per: per, offset: offset }
+        params = { per: per, page: page }
         params['msf[target][]'] = 1
         # ID(ISBNなど)、名称、巻・順序、人名、典拠ID、出版者、レーベル、本の形状など、タグ、分類、備考
         option_index = 1

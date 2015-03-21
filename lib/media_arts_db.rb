@@ -7,7 +7,5 @@ require "json"
 require "nokogiri"
 
 module MediaArtsDb
-  def self.hello
-    p "Hello.Hello."
-  end
+
 end
