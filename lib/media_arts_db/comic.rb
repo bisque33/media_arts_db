@@ -1,10 +1,17 @@
 module MediaArtsDb
 
   module ComicSearchOption
+    TARGET_BOOK = 1
+    TARGET_MAGAZINE_VOLUME = 2
+    TARGET_DOCUMENT = 3
+    TARGET_ORIGINAL_PICTURE = 4
+    TARGET_OTHER = 5
+
     START_YEAR = 'start_year' # 日付範囲指定（From年）
     START_MONTH = 'start_month' # 日付範囲指定（From月）
     END_YEAR = 'end_year' # 日付範囲指定（To年）
     END_MONTH = 'end_month' # 日付範囲指定（To月）
+
     ID = 1 # ID(ISBNなど)
     TITLE = 2 # 名称
     VOLUME = 3 # 巻・順序
@@ -20,6 +27,10 @@ module MediaArtsDb
     MAGAZINE_SUB_VOLUME = 13 # [雑誌巻号]補助号数
     MAGAZINE_VOLUME = 14 # [雑誌巻号]巻・号・通巻
 
+    def self.enable_targets
+      [TARGET_BOOK, TARGET_MAGAZINE_VOLUME, TARGET_DOCUMENT, TARGET_ORIGINAL_PICTURE, TARGET_OTHER]
+    end
+
     def self.enable_optins_for_time_range
       [START_YEAR, START_MONTH, END_YEAR, END_MONTH]
     end
@@ -31,7 +42,6 @@ module MediaArtsDb
     def self.enable_options_for_magazine
       enable_options + [MAGAZINE_DISPLAY_VOLUME, MAGAZINE_SUB_VOLUME, MAGAZINE_VOLUME]
     end
-
   end
 
   class Comic < HttpBase
@@ -61,11 +71,11 @@ module MediaArtsDb
         end
       end
 
-      def search_book(options: nil, per: 100, page: 1)
+      def search_by_source(target = TARGET_BOOK, options: nil, per: 100, page: 1)
+        return [] unless ComicSearchOption.enable_targets.include?(target)
         uri = MediaArtsDb.comic_search_uri
         params = { per: per, page: page }
-        params['msf[target][]'] = 1
-        # ID(ISBNなど)、名称、巻・順序、人名、典拠ID、出版者、レーベル、本の形状など、タグ、分類、備考
+        params['msf[target][]'] = target
         option_index = 1
         options.each do |key, value|
           case key
@@ -76,27 +86,28 @@ module MediaArtsDb
               params["msf[select#{option_index}]"] = key
               params["msf[text#{option_index}]"] = value
               option_index += 1
+            when *ComicSearchOption.enable_options_for_magazine
+              next unless target == TARGET_MAGAZINE_VOLUME
+              next if option_index > 5
+              params["msf[select#{option_index}]"] = key
+              params["msf[text#{option_index}]"] = value
+              option_index += 1
           end
         end
 
         res_body = search_request(uri, params)
-        parse_book_search_result(res_body)
-      end
-
-      def search_magazine_volume
-
-      end
-
-      def search_document
-
-      end
-
-      def search_original_picture
-
-      end
-
-      def search_other
-
+        case target
+          when TARGET_BOOK
+            parse_book_search_result(res_body)
+          when TARGET_MAGAZINE_VOLUME
+            parse_magazine_volume_search_result(res_body)
+          when TARGET_DOCUMENT
+            parse_document_search_result(res_body)
+          when TARGET_ORIGINAL_PICTURE
+            parse_original_picture_search_result(res_body)
+          when TARGET_OTHER
+            parse_other_search_result(res_body)
+        end
       end
 
 
@@ -199,6 +210,22 @@ module MediaArtsDb
           result << row
         end
         result
+      end
+
+      def parse_magazine_volume_search_result(res_body)
+
+      end
+
+      def parse_document_search_result(res_body)
+
+      end
+
+      def parse_original_picture_search_result(res_body)
+
+      end
+
+      def parse_other_search_result(res_body)
+
       end
 
       def parse_comic_works_resutl(res_body)

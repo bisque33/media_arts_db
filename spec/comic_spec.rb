@@ -77,7 +77,7 @@ describe MediaArtsDb::Comic do
     context 'parameter options TITLE' do
       it 'returns many records' do
         options = {ComicSearchOption::TITLE => 'カードキャプター'}
-        results = Comic.search_book options: options
+        results = Comic.search_by_source options: options
         expect(results.count).not_to be 0
       end
     end
@@ -87,14 +87,14 @@ describe MediaArtsDb::Comic do
             ComicSearchOption::TITLE => 'カードキャプター',
             ComicSearchOption::VOLUME => 1
         }
-        results = Comic.search_book options: options
+        results = Comic.search_by_source options: options
         expect(results.count).not_to be 0
       end
     end
     context 'paramater options ID' do
       it 'returns one record' do
         options = {ComicSearchOption::ID => '4063197433'}
-        results = Comic.search_book options: options
+        results = Comic.search_by_source options: options
         expect(results.count).to be 1
         expect(results[0][:title]).to eq 'カードキャプターさくら'
         expect(results[0][:volume]).to eq '1'
@@ -103,21 +103,21 @@ describe MediaArtsDb::Comic do
     context 'paramater :per' do
       it 'returns 3 results' do
         options = {ComicSearchOption::TITLE => 'カードキャプター'}
-        results = Comic.search_book options: options, per: 3
+        results = Comic.search_by_source options: options, per: 3
         expect(results.count).to eq 3
       end
     end
     context 'paramater :page' do
       it 'returns 100 results' do
         options = {ComicSearchOption::TITLE => 'さくら'}
-        results = Comic.search_book options: options, page: 3
+        results = Comic.search_by_source options: options, page: 3
         expect(results.count).to eq 100
       end
     end
     context 'paramater :per and :page' do
       it 'returns 50 results' do
         options = {ComicSearchOption::TITLE => 'さくら'}
-        results = Comic.search_book options: options, per: 50, page: 3
+        results = Comic.search_by_source options: options, per: 50, page: 3
         expect(results.count).to eq 50
       end
     end

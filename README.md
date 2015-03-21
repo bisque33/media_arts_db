@@ -24,6 +24,25 @@ Or install it yourself as:
 
 TODO: Write usage instructions here
 
+### Comic
+
+```ruby
+# 作品名で検索
+MediaArtsDb::Comic.search_by_keyword title: 'カードキャプター'
+# 雑誌名で検索
+MediaArtsDb::Comic.search_by_keyword magazine: 'なかよし'
+# 著者名で検索
+MediaArtsDb::Comic.search_by_keyword author: 'CLAMP'
+# 単行本・雑誌・資料で検索
+# 第一引数でどの結果を取得するかを指定する。省略した場合は「単行本」となる
+# キーワード引数 options: で使用できるオプションは MediaArtsDb::ComicSearchOption に定義されている
+target = MediaArtsDb::ComicSearchOption::TARGET_BOOK
+options = { MediaArtsDb::ComicSearchOption::TITLE => 'カードキャプター' }
+MediaArtsDb::Comic.search_by_keyword target, options: options
+# ページング
+# search_by_keyword 及び search_by_keyword はキーワード引数 :per :page にて検索結果の件数指定やページ指定が可能
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `bin/console` for an interactive prompt that will allow you to experiment. Run `bundle exec media_arts_db` to use the code located in this directory, ignoring other installed copies of this gem.
