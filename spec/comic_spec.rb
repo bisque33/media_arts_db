@@ -35,7 +35,7 @@ describe MediaArtsDb::Comic do
             expect(result[:tags]).to be_truthy
             expect(result[:total_comic_volume]).to be_truthy
             expect(result[:total_magazine_volume]).to be_truthy
-            expect(result[:documents]).to be_truthy
+            expect(result[:materials]).to be_truthy
             expect(result[:original_picture]).to be_truthy
             expect(result[:other]).to be_truthy
             break
@@ -53,7 +53,7 @@ describe MediaArtsDb::Comic do
             expect(result[:tags]).to be_truthy
             expect(result[:total_comic_volume]).to be_truthy
             expect(result[:total_magazine_volume]).to be_truthy
-            expect(result[:documents]).to be_truthy
+            expect(result[:materials]).to be_truthy
             expect(result[:original_picture]).to be_truthy
             expect(result[:other]).to be_truthy
             break
@@ -168,51 +168,186 @@ describe MediaArtsDb::Comic do
   end
 
   describe '#search_by_source' do
-    context 'parameter options TITLE' do
-      it 'returns many records' do
-        options = {ComicSearchOption::TITLE => 'カードキャプター'}
-        results = Comic.search_by_source options: options
-        expect(results.count).not_to be 0
+    describe 'TARGET_BOOK' do
+      context 'parameter options TITLE but no hit' do
+        it 'returns many records' do
+          options = {ComicSearchOption::TITLE => '該当なし'}
+          results = Comic.search_by_source options: options
+          expect(results.count).to be 0
+        end
+      end
+      context 'parameter options TITLE' do
+        it 'returns many records' do
+          options = {ComicSearchOption::TITLE => 'カードキャプター'}
+          results = Comic.search_by_source options: options
+          expect(results.count).not_to be 0
+        end
+        it 'has many values' do
+          options = {ComicSearchOption::TITLE => 'カードキャプター'}
+          results = Comic.search_by_source options: options
+          expect(results[0][:type]).to eq 'book'
+          expect(results[0][:isbn]).to be_truthy
+          expect(results[0][:book_title]).to be_truthy
+          expect(results[0][:book_id]).to be_truthy
+          expect(results[0][:label]).to be_truthy
+          expect(results[0][:volume]).to be_truthy
+          expect(results[0][:author]).to be_truthy
+          expect(results[0][:publisher]).to be_truthy
+          expect(results[0][:published_date]).to be_truthy
+        end
+      end
+      context 'parameter options TITLE and VOLUME' do
+        it 'returns many records' do
+          options = {
+              ComicSearchOption::TITLE => 'カードキャプター',
+              ComicSearchOption::VOLUME => 1
+          }
+          results = Comic.search_by_source options: options
+          expect(results.count).not_to be 0
+        end
+      end
+      context 'paramater options ID' do
+        it 'returns one record' do
+          options = {ComicSearchOption::ID => '4063197433'}
+          results = Comic.search_by_source options: options
+          expect(results.count).to be 1
+          expect(results[0][:book_title]).to eq 'カードキャプターさくら'
+          expect(results[0][:volume]).to eq '1'
+        end
+      end
+      context 'paramater :per' do
+        it 'returns 3 results' do
+          options = {ComicSearchOption::TITLE => 'カードキャプター'}
+          results = Comic.search_by_source options: options, per: 3
+          expect(results.count).to eq 3
+        end
+      end
+      context 'paramater :page' do
+        it 'returns 100 results' do
+          options = {ComicSearchOption::TITLE => 'さくら'}
+          results = Comic.search_by_source options: options, page: 3
+          expect(results.count).to eq 100
+        end
+      end
+      context 'paramater :per and :page' do
+        it 'returns 50 results' do
+          options = {ComicSearchOption::TITLE => 'さくら'}
+          results = Comic.search_by_source options: options, per: 50, page: 3
+          expect(results.count).to eq 50
+        end
       end
     end
-    context 'parameter options TITLE and VOLUME' do
-      it 'returns many records' do
-        options = {
-            ComicSearchOption::TITLE => 'カードキャプター',
-            ComicSearchOption::VOLUME => 1
-        }
-        results = Comic.search_by_source options: options
-        expect(results.count).not_to be 0
+    describe 'TARGET_MAGAZINE_VOLUME' do
+      context 'parameter options TITLE but no hit' do
+        it 'returns many records' do
+          options = {ComicSearchOption::TITLE => '該当なし'}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_MAGAZINE_VOLUME, options: options
+          expect(results.count).to be 0
+        end
+      end
+      context 'parameter options TITLE' do
+        it 'returns many records' do
+          options = {ComicSearchOption::TITLE => ''}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_MAGAZINE_VOLUME, options: options
+          expect(results.count).not_to be 0
+        end
+        it 'has many values' do
+          options = {ComicSearchOption::TITLE => ''}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_MAGAZINE_VOLUME, options: options
+          expect(results[0][:type]).to eq 'magazine'
+          expect(results[0][:magazine_title]).to be_truthy
+          expect(results[0][:magazine_id]).to be_truthy
+          expect(results[0][:volume]).to be_truthy
+          expect(results[0][:display_volume]).to be_truthy
+          expect(results[0][:sub_volume]).to be_truthy
+          expect(results[0][:publisher]).to be_truthy
+          expect(results[0][:published_date]).to be_truthy
+        end
       end
     end
-    context 'paramater options ID' do
-      it 'returns one record' do
-        options = {ComicSearchOption::ID => '4063197433'}
-        results = Comic.search_by_source options: options
-        expect(results.count).to be 1
-        expect(results[0][:title]).to eq 'カードキャプターさくら'
-        expect(results[0][:volume]).to eq '1'
+    describe 'TARGET_MATERIAL' do
+      context 'parameter options TITLE but no hit' do
+        it 'returns many records' do
+          options = {ComicSearchOption::TITLE => '該当なし'}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_MATERIAL, options: options
+          expect(results.count).to be 0
+        end
+      end
+      context 'parameter options TITLE' do
+        it 'returns many records' do
+          options = {ComicSearchOption::TITLE => ''}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_MATERIAL, options: options
+          expect(results.count).not_to be 0
+        end
+        it 'has many values' do
+          options = {ComicSearchOption::TITLE => ''}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_MATERIAL, options: options
+          expect(results[0][:type]).to eq 'material'
+          expect(results[0][:material_title]).to be_truthy
+          expect(results[0][:material_id]).to be_truthy
+          expect(results[0][:category]).to be_truthy
+          expect(results[0][:number]).to be_truthy
+          expect(results[0][:author]).to be_truthy
+          expect(results[0][:related_material_title]).to be_truthy
+          expect(results[0][:published_date]).to be_truthy
+        end
       end
     end
-    context 'paramater :per' do
-      it 'returns 3 results' do
-        options = {ComicSearchOption::TITLE => 'カードキャプター'}
-        results = Comic.search_by_source options: options, per: 3
-        expect(results.count).to eq 3
+    describe 'TARGET_ORIGINAL_PICTURE' do
+      context 'parameter options TITLE but no hit' do
+        it 'returns many records' do
+          options = {ComicSearchOption::TITLE => '該当なし'}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_ORIGINAL_PICTURE, options: options
+          expect(results.count).to be 0
+        end
+      end
+      context 'parameter options TITLE' do
+        it 'returns many records' do
+          options = {ComicSearchOption::TITLE => ''}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_ORIGINAL_PICTURE, options: options
+          expect(results.count).not_to be 0
+        end
+        it 'has many values' do
+          options = {ComicSearchOption::TITLE => ''}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_ORIGINAL_PICTURE, options: options
+          expect(results[0][:type]).to eq 'original_picture'
+          expect(results[0][:original_picture_title]).to be_truthy
+          expect(results[0][:original_picture_id]).to be_truthy
+          expect(results[0][:recorded]).to be_truthy
+          expect(results[0][:number]).to be_truthy
+          expect(results[0][:quantity]).to be_truthy
+          expect(results[0][:author]).to be_truthy
+          expect(results[0][:published_date]).to be_truthy
+          expect(results[0][:writing_time]).to be_truthy
+        end
       end
     end
-    context 'paramater :page' do
-      it 'returns 100 results' do
-        options = {ComicSearchOption::TITLE => 'さくら'}
-        results = Comic.search_by_source options: options, page: 3
-        expect(results.count).to eq 100
+    describe 'TARGET_OTHER' do
+      context 'parameter options TITLE but no hit' do
+        it 'returns many records' do
+          options = {ComicSearchOption::TITLE => '該当なし'}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_OTHER, options: options
+          expect(results.count).to be 0
+        end
       end
-    end
-    context 'paramater :per and :page' do
-      it 'returns 50 results' do
-        options = {ComicSearchOption::TITLE => 'さくら'}
-        results = Comic.search_by_source options: options, per: 50, page: 3
-        expect(results.count).to eq 50
+      context 'parameter options TITLE' do
+        it 'returns many records' do
+          options = {ComicSearchOption::TITLE => ''}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_OTHER, options: options
+          expect(results.count).not_to be 0
+        end
+        it 'has many values' do
+          options = {ComicSearchOption::TITLE => ''}
+          results = Comic.search_by_source target: ComicSearchOption::TARGET_OTHER, options: options
+          expect(results[0][:type]).to eq 'other'
+          expect(results[0][:other_title]).to be_truthy
+          expect(results[0][:other_id]).to be_truthy
+          expect(results[0][:series]).to be_truthy
+          expect(results[0][:volume]).to be_truthy
+          expect(results[0][:author]).to be_truthy
+          expect(results[0][:publisher]).to be_truthy
+          expect(results[0][:published_date]).to be_truthy
+        end
       end
     end
   end
@@ -228,14 +363,26 @@ describe MediaArtsDb::Comic do
         expect(result.class).to eq Hash
       end
     end
-
-    context 'parameter is exists id' do
-      it 'returns something' do
+    context 'parameter id' do
+      it 'has many values' do
         result = Comic.find_comic_works('70232')
-        expect(result.class).to eq Hash
+        expect(result[:comic_id]).to be_nil
+        expect(result[:title]).to be_truthy
+        expect(result[:title_kana]).to be_truthy
+        expect(result[:sub_title]).to be_truthy
+        expect(result[:title_alphabet]).to be_truthy
+        expect(result[:author]).to be_truthy
+        expect(result[:published_date]).to be_truthy
+        expect(result[:source]).to be_truthy
+        expect(result[:introduction]).to be_truthy
+        expect(result[:category]).to be_truthy
+        expect(result[:tags]).to be_truthy
+        expect(result[:rating]).to be_truthy
+        # expect(result[:author_authority_id]).to be_truthy
+        expect(result[:authority_id]).to be_truthy
+        expect(result[:book_titles]).to be_truthy
+        expect(result[:magazine_works]).to be_truthy
       end
     end
-
   end
-
 end

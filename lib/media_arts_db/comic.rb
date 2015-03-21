@@ -3,7 +3,7 @@ module MediaArtsDb
   module ComicSearchOption
     TARGET_BOOK = 1
     TARGET_MAGAZINE_VOLUME = 2
-    TARGET_DOCUMENT = 3
+    TARGET_MATERIAL = 3
     TARGET_ORIGINAL_PICTURE = 4
     TARGET_OTHER = 5
 
@@ -21,14 +21,14 @@ module MediaArtsDb
     LABEL = 7 # レーベル
     BOOK_SHAPE = 8 # 本の形状など
     TAG = 9 # タグ
-    CLASSIFICATION = 10 # 分類
+    CATEGORY = 10 # 分類
     NOTE = 11 # 備考
     MAGAZINE_DISPLAY_VOLUME = 12 # [雑誌巻号]表示号数
     MAGAZINE_SUB_VOLUME = 13 # [雑誌巻号]補助号数
     MAGAZINE_VOLUME = 14 # [雑誌巻号]巻・号・通巻
 
     def self.enable_targets
-      [TARGET_BOOK, TARGET_MAGAZINE_VOLUME, TARGET_DOCUMENT, TARGET_ORIGINAL_PICTURE, TARGET_OTHER]
+      [TARGET_BOOK, TARGET_MAGAZINE_VOLUME, TARGET_MATERIAL, TARGET_ORIGINAL_PICTURE, TARGET_OTHER]
     end
 
     def self.enable_optins_for_time_range
@@ -36,7 +36,7 @@ module MediaArtsDb
     end
 
     def self.enable_options
-      [ID, TITLE, VOLUME, PERSON_NAME, AUTHORITY_ID, PUBLISHER, LABEL, BOOK_SHAPE, TAG, CLASSIFICATION, NOTE]
+      [ID, TITLE, VOLUME, PERSON_NAME, AUTHORITY_ID, PUBLISHER, LABEL, BOOK_SHAPE, TAG, CATEGORY, NOTE]
     end
 
     def self.enable_options_for_magazine
@@ -71,7 +71,7 @@ module MediaArtsDb
         end
       end
 
-      def search_by_source(target = TARGET_BOOK, options: nil, per: 100, page: 1)
+      def search_by_source(target: TARGET_BOOK, options: nil, per: 100, page: 1)
         return [] unless ComicSearchOption.enable_targets.include?(target)
         uri = MediaArtsDb.comic_search_uri
         params = { per: per, page: page }
@@ -101,8 +101,8 @@ module MediaArtsDb
             parse_book_search_result(res_body)
           when TARGET_MAGAZINE_VOLUME
             parse_magazine_volume_search_result(res_body)
-          when TARGET_DOCUMENT
-            parse_document_search_result(res_body)
+          when TARGET_MATERIAL
+            parse_material_search_result(res_body)
           when TARGET_ORIGINAL_PICTURE
             parse_original_picture_search_result(res_body)
           when TARGET_OTHER
@@ -166,7 +166,7 @@ module MediaArtsDb
           row[:tags] = tr.css('td:nth-child(3)').text
           row[:total_comic_volume] = tr.css('td:nth-child(4)').text
           row[:total_magazine_volume] = tr.css('td:nth-child(5)').text
-          row[:documents] = tr.css('td:nth-child(6)').text
+          row[:materials] = tr.css('td:nth-child(6)').text
           row[:original_picture] = tr.css('td:nth-child(7)').text
           row[:other] = tr.css('td:nth-child(8)').text
 
@@ -236,17 +236,19 @@ module MediaArtsDb
         doc = Nokogiri::HTML.parse(res_body)
         doc.css('div.resultTabD_subA > div > table > tbody > tr').each do |tr|
           row = {}
+          row[:type] = 'book'
           tmp_id = tr.css('td:nth-child(1)').text.split('<br>')
           if tmp_id.count == 1
+            row[:isbn] = '-'  # ISBNは無くてもキーを作る
             # row[:separate_book_id] = tmp_id[0].gsub(/(\(|\))/, '') # 単行ID
           else
             row[:isbn] = tmp_id[0]  # ISBN
             # row[:separate_book_id] = tmp_id[1].gsub(/(\(|\))/, '') # 単行ID
           end
           if tr.css('td:nth-child(2) > a').empty?
-            row[:title] = tr.css('td:nth-child(2)').text # 単行本名
+            row[:book_title] = tr.css('td:nth-child(2)').text # 単行本名
           else
-            row[:title] = tr.css('td:nth-child(2) > a').text # 単行本名
+            row[:book_title] = tr.css('td:nth-child(2) > a').text # 単行本名
             row[:book_id] = clip_id(tr.css('td:nth-child(2) > a').attribute('href').value)
           end
           row[:label] = tr.css('td:nth-child(3)').text # 単行本レーベル
@@ -261,19 +263,96 @@ module MediaArtsDb
       end
 
       def parse_magazine_volume_search_result(res_body)
+        result = []
+        doc = Nokogiri::HTML.parse(res_body)
+        doc.css('div.resultTabD_subB > div > table > tbody > tr').each do |tr|
+          row = {}
+          row[:type] = 'magazine'
+          if tr.css('td:nth-child(2) > a').empty?
+            row[:magazine_title] = tr.css('td:nth-child(2)').text # 雑誌名
+          else
+            row[:magazine_title] = tr.css('td:nth-child(2) > a').text # 雑誌名
+            row[:magazine_id] = clip_id(tr.css('td:nth-child(2) > a').attribute('href').value)
+          end
+          row[:volume] = tr.css('td:nth-child(3)').text # 巻・合・通巻
+          row[:display_volume] = tr.css('td:nth-child(4)').text # 表示号数
+          row[:sub_volume] = tr.css('td:nth-child(5)').text # 補助号数
+          row[:publisher] = tr.css('td:nth-child(6)').text # 出版者
+          row[:published_date] = tr.css('td:nth-child(7)').text # 表示年月
 
+          result << row
+        end
+        result
       end
 
-      def parse_document_search_result(res_body)
+      def parse_material_search_result(res_body)
+        result = []
+        doc = Nokogiri::HTML.parse(res_body)
+        doc.css('div.resultTabD_subC > div > table > tbody > tr').each do |tr|
+          row = {}
+          row[:type] = 'material'
+          if tr.css('td:nth-child(2) > a').empty?
+            row[:material_title] = tr.css('td:nth-child(2)').text # 資料名
+          else
+            row[:material_title] = tr.css('td:nth-child(2) > a').text # 資料名
+            row[:material_id] = clip_id(tr.css('td:nth-child(2) > a').attribute('href').value)
+          end
+          row[:category] = tr.css('td:nth-child(3)').text # 分類・カテゴリー
+          row[:number] = tr.css('td:nth-child(4)').text # 順序
+          row[:author] = tr.css('td:nth-child(5)').text # 著者名
+          row[:related_material_title] = tr.css('td:nth-child(6)').text # 関連物
+          row[:published_date] = tr.css('td:nth-child(7)').text # 時期
 
+          result << row
+        end
+        result
       end
 
       def parse_original_picture_search_result(res_body)
+        result = []
+        doc = Nokogiri::HTML.parse(res_body)
+        doc.css('div.resultTabD_subD > div > table > tbody > tr').each do |tr|
+          row = {}
+          row[:type] = 'original_picture'
+          if tr.css('td:nth-child(2) > a').empty?
+            row[:original_picture_title] = tr.css('td:nth-child(2)').text # 原画作品名
+          else
+            row[:original_picture_title] = tr.css('td:nth-child(2) > a').text # 原画作品名
+            row[:original_picture_id] = clip_id(tr.css('td:nth-child(2) > a').attribute('href').value)
+          end
+          row[:recorded] = tr.css('td:nth-child(3)').text # 収録
+          row[:number] = tr.css('td:nth-child(4)').text # 順序
+          row[:quantity] = tr.css('td:nth-child(5)').text # 枚数
+          row[:author] = tr.css('td:nth-child(6)').text # 著者名
+          row[:published_date] = tr.css('td:nth-child(7)').text # 初出
+          row[:writing_time] = tr.css('td:nth-child(8)').text # 執筆期間
 
+          result << row
+        end
+        result
       end
 
       def parse_other_search_result(res_body)
+        result = []
+        doc = Nokogiri::HTML.parse(res_body)
+        doc.css('div.resultTabD_subE > div > table > tbody > tr').each do |tr|
+          row = {}
+          row[:type] = 'other'
+          if tr.css('td:nth-child(2) > a').empty?
+            row[:other_title] = tr.css('td:nth-child(2)').text # 冊子名
+          else
+            row[:other_title] = tr.css('td:nth-child(2) > a').text # 冊子名
+            row[:other_id] = clip_id(tr.css('td:nth-child(2) > a').attribute('href').value)
+          end
+          row[:series] = tr.css('td:nth-child(3)').text # シリーズ
+          row[:volume] = tr.css('td:nth-child(4)').text # 巻
+          row[:author] = tr.css('td:nth-child(6)').text # 著者名
+          row[:publisher] = tr.css('td:nth-child(7)').text # 出版者・サークル名
+          row[:published_date] = tr.css('td:nth-child(8)').text # 発行年月
 
+          result << row
+        end
+        result
       end
 
       def parse_comic_works_resutl(res_body)
@@ -283,16 +362,17 @@ module MediaArtsDb
           if tr.css('td > a').empty?
             case tr.css('th').text
               # HTML構造の誤りにより「マンガID」が取得できない
-              when 'マンガID' ; result[:comic_id] = tr.css('td').text
+              # when 'マンガID' ; result[:comic_id] = tr.css('td').text
               when 'マンガ作品名' ; result[:title] = tr.css('td').text
               when 'マンガ作品名ヨミ' ; result[:title_kana] = tr.css('td').text
               when '別題・副題・原題' ; result[:sub_title] = tr.css('td').text
               when 'ローマ字表記' ; result[:title_alphabet] = tr.css('td').text
               when '著者（責任表示）' ; result[:author] = tr.css('td').text
+              # when '著者典拠ID' ; result[:author_authority_id] = tr.css('td').text
               when '公表時期' ; result[:published_date] = tr.css('td').text
               when '出典（初出）' ; result[:source] = tr.css('td').text
               when 'マンガ作品紹介文・解説' ; result[:introduction] = tr.css('td').text
-              when '分類' ; result[:classification] = tr.css('td').text
+              when '分類' ; result[:category] = tr.css('td').text
               when 'タグ' ; result[:tags] = tr.css('td').text
               when 'レイティング' ; result[:rating] = tr.css('td').text
             end
@@ -300,7 +380,7 @@ module MediaArtsDb
             case tr.css('th').text
               when '著者典拠ID'
                 # 著者が複数の場合、著者典拠IDも複数になるが、それについてはまだ未実装
-                result[:author_authority_id] = tr.css('td > a').text
+                # result[:author_authority_id] = tr.css('td > a').text
                 result[:authority_id] = clip_id(tr.css('td > a').attribute('href').value)
             end
           end

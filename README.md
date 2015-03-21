@@ -1,6 +1,6 @@
 # MediaArtsDb
 
-media_arts_db is RubyGem to scraping the MediaArtsDataBase(メディア芸術データベース: http://mediaarts-db.jp/).
+media_arts_db is RubyGem to scraping to the MediaArtsDataBase(メディア芸術データベース: http://mediaarts-db.jp/).
 
 ## Installation
 
@@ -32,11 +32,11 @@ MediaArtsDb::Comic.search_by_keyword magazine: 'なかよし'
 # 著者名で検索
 MediaArtsDb::Comic.search_by_keyword author: 'CLAMP'
 # 単行本・雑誌・資料で検索
-# 第一引数でどの結果を取得するかを指定する。省略した場合は「単行本」となる
+# キーワード引数 targer: どの結果を取得するかを指定する。省略した場合は「単行本」となる
 # キーワード引数 options: で使用できるオプションは MediaArtsDb::ComicSearchOption に定義されている
 target = MediaArtsDb::ComicSearchOption::TARGET_BOOK
 options = { MediaArtsDb::ComicSearchOption::TITLE => 'カードキャプター' }
-MediaArtsDb::Comic.search_by_source target, options: options
+MediaArtsDb::Comic.search_by_source targer: target, options: options
 # ページング
 # search_by_keyword 及び search_by_source はキーワード引数 :per :page にて検索結果の件数指定やページ指定が可能
 # :per の既定は100、:page の既定は1
