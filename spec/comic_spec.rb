@@ -6,7 +6,7 @@ describe MediaArtsDb::Comic do
 
     context 'parameter nothing' do
       it 'returns empty array.' do
-        results = MediaArtsDb::Comic.title_search()
+        results = MediaArtsDb::Comic.search_title()
         expect(results).to eq []
       end
     end
@@ -14,7 +14,7 @@ describe MediaArtsDb::Comic do
     context 'parameter title' do
 
       it 'returns 5 results' do
-        results = MediaArtsDb::Comic.title_search('カードキャプター')
+        results = MediaArtsDb::Comic.search_title('カードキャプター')
         expect(results.count).to be 5
         expect(results[0][:title]).to eq 'カードキャプターさくら'
         expect(results[0][:type]).to eq 'comic'
@@ -24,19 +24,32 @@ describe MediaArtsDb::Comic do
 
   end
 
+  describe '#search_separate_book' do
+    context 'parameter title' do
+      it 'returns 51 records' do
+        detail = {MediaArtsDb::ComicSearchOption::TITLE => 'カードキャプター'}
+        results = MediaArtsDb::Comic.search_separate_book(nil, nil, detail)
+        expect(results.count).to be 51
+      end
+    end
+  end
+
   describe '#find_comic_work' do
     context 'parameter nothing' do
     end
 
 
-    context 'parameter not exists id' do
+    context 'parameter is not exists id' do
+      it 'returns empty hash' do
+        result = MediaArtsDb::Comic.find_comic_works('00000')
+        expect(result.class).to eq Hash
+      end
     end
 
-    context 'parameter exists id' do
-      it 'returns empty hash' do
-        result = MediaArtsDb::Comic.find_comic_work('70232')
+    context 'parameter is exists id' do
+      it 'returns something' do
+        result = MediaArtsDb::Comic.find_comic_works('70232')
         expect(result.class).to eq Hash
-        # expect(result.count).to be 1
       end
     end
 
