@@ -4,7 +4,7 @@ include MediaArtsDb
 include MediaArtsDb::ComicSearchOption
 
 describe MediaArtsDb::Comic do
-  describe '#title_search' do
+  describe '#search_by_keyword' do
     context 'parameter nothing' do
       it 'returns empty array.' do
         results = Comic.search_by_keyword
@@ -17,7 +17,6 @@ describe MediaArtsDb::Comic do
         expect(results).to eq []
       end
     end
-
     context 'parameter :title' do
       before do
         @results = Comic.search_by_keyword title: 'カードキャプター'
@@ -25,31 +24,127 @@ describe MediaArtsDb::Comic do
       it 'returns 5 results' do
         expect(@results.count).to eq 5
       end
-      it 'has values as a comic_works' do
-        result = @results[0]
-        expect(result[:title]).to eq 'カードキャプターさくら'
-        expect(result[:type]).to eq 'comic'
-        expect(result[:comic_works_id]).to eq '70232'
-        expect(result[:auther]).to eq '[著]CLAMP'
-        expect(result[:tags]).to eq '-'
-        expect(result[:total_comic_volume]).to eq '10件'
-        expect(result[:total_magazine_volume]).to eq '4件'
-        expect(result[:documents]).to eq '-'
-        expect(result[:original_picture]).to eq '-'
-        expect(result[:other]).to eq '-'
+      it 'has many values as a comic_works' do
+        @results.each do |result|
+          if result[:type] == 'comic_works'
+            expect(result[:title]).to be_truthy
+            expect(result[:type]).to eq 'comic_works'
+            expect(result[:comic_works_id]).to be_truthy
+            expect(result[:magazine_works_id]).to be_nil
+            expect(result[:auther]).to be_truthy
+            expect(result[:tags]).to be_truthy
+            expect(result[:total_comic_volume]).to be_truthy
+            expect(result[:total_magazine_volume]).to be_truthy
+            expect(result[:documents]).to be_truthy
+            expect(result[:original_picture]).to be_truthy
+            expect(result[:other]).to be_truthy
+            break
+          end
+        end
       end
-      it 'has values as a magazine_works' do
-        result = @results[2]
-        expect(result[:title]).to eq 'カードキャプターさくら'
-        expect(result[:type]).to eq 'magazine'
-        expect(result[:comic_works_id]).to eq nil
-        expect(result[:auther]).to eq 'CLAMP'
-        expect(result[:tags]).to eq '-'
-        expect(result[:total_comic_volume]).to eq '-'
-        expect(result[:total_magazine_volume]).to eq '4件'
-        expect(result[:documents]).to eq '-'
-        expect(result[:original_picture]).to eq '-'
-        expect(result[:other]).to eq '-'
+      it 'has many values as a magazine_works' do
+        @results.each do |result|
+          if result[:type] == 'magazine_works'
+            expect(result[:title]).to be_truthy
+            expect(result[:type]).to eq 'magazine_works'
+            expect(result[:comic_works_id]).to be_nil
+            expect(result[:magazine_works_id]).to be_truthy
+            expect(result[:auther]).to be_truthy
+            expect(result[:tags]).to be_truthy
+            expect(result[:total_comic_volume]).to be_truthy
+            expect(result[:total_magazine_volume]).to be_truthy
+            expect(result[:documents]).to be_truthy
+            expect(result[:original_picture]).to be_truthy
+            expect(result[:other]).to be_truthy
+            break
+          end
+        end
+      end
+    end
+
+    context 'parameter :magazine but no hit' do
+      it 'returns empty array' do
+        results = Comic.search_by_keyword magazine: '該当なし'
+        expect(results).to eq []
+      end
+    end
+    context 'parameter :magazine' do
+      before do
+        @results = Comic.search_by_keyword magazine: 'なかよし'
+      end
+      it 'returns many results' do
+        expect(@results.count).not_to eq 0
+      end
+      it 'has many values' do
+        result = @results.first
+        expect(result[:type]).to eq 'magazine_titles'
+        expect(result[:title]).to be_truthy
+        expect(result[:magazine_titles_id]).to be_truthy
+        expect(result[:publisher]).to be_truthy
+        expect(result[:published_cycle]).to be_truthy
+        expect(result[:published_start_date]).to be_truthy
+        expect(result[:published_end_date]).to be_truthy
+        expect(result[:tags]).to be_truthy
+      end
+    end
+
+    context 'parameter :author but no hit' do
+      it 'returns empty array' do
+        results = Comic.search_by_keyword author: '該当なし'
+        expect(results).to eq []
+      end
+    end
+    context 'parameter :author' do
+      before do
+        @results = Comic.search_by_keyword author: '冨樫'
+      end
+      it 'returns many results' do
+        expect(@results.count).not_to eq 0
+      end
+      it 'has many values as a authority' do
+        @results.each do |result|
+          if result[:type] == 'authority'
+            expect(result[:type]).to eq 'authority'
+            expect(result[:authority_id]).to be_truthy
+            expect(result[:authority_name]).to be_truthy
+            expect(result[:authority_name_kana]).to be_truthy
+            expect(result[:related_authority_name]).to be_truthy
+            expect(result[:book_title_quantity]).to be_truthy
+            expect(result[:magazine_works_name]).to be_truthy
+            expect(result[:magazine_works_id]).to be_nil
+            break
+          end
+        end
+      end
+      it 'has many values as a magazine_works' do
+        @results.each do |result|
+          if result[:type] == 'magazine_works'
+            expect(result[:type]).to eq 'magazine_works'
+            expect(result[:authority_id]).to be_nil
+            expect(result[:authority_name]).to be_truthy
+            expect(result[:authority_name_kana]).to be_truthy
+            expect(result[:related_authority_name]).to be_truthy
+            expect(result[:book_title_quantity]).to be_truthy
+            expect(result[:magazine_works_name]).to be_truthy
+            expect(result[:magazine_works_id]).to be_truthy
+            break
+          end
+        end
+      end
+      it 'has many values as a none' do
+        @results.each do |result|
+          if result[:type] == 'none'
+            expect(result[:type]).to eq 'none'
+            expect(result[:authority_id]).to be_nil
+            expect(result[:authority_name]).to be_truthy
+            expect(result[:authority_name_kana]).to be_truthy
+            expect(result[:related_authority_name]).to be_truthy
+            expect(result[:book_title_quantity]).to be_truthy
+            expect(result[:magazine_works_name]).to be_truthy
+            expect(result[:magazine_works_id]).to be_nil
+            break
+          end
+        end
       end
     end
     context 'paramater :per' do
@@ -70,10 +165,9 @@ describe MediaArtsDb::Comic do
         expect(@results.count).to eq 1
       end
     end
-
   end
 
-  describe '#search_book' do
+  describe '#search_by_source' do
     context 'parameter options TITLE' do
       it 'returns many records' do
         options = {ComicSearchOption::TITLE => 'カードキャプター'}

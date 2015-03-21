@@ -152,15 +152,16 @@ module MediaArtsDb
         doc = Nokogiri::HTML.parse(res_body)
         doc.css('div.resultTabA table > tbody > tr').each do |tr|
           row = {}
-          row[:title] = tr.css('td:nth-child(1)').text
           link_url = tr.css('td:nth-child(1) a').attribute('href').value
-          # リンクがcomic_worksの場合と、magazine_worksの場合がある
+          # リンクがcomic_worksとmagazine_worksの場合がある
           if link_url =~ /comic_works/
-            row[:type] = 'comic'
-            row[:comic_works_id] = link_url.scan(/[0-9]+$/).first
+            row[:type] = 'comic_works'
+            row[:comic_works_id] = clip_id(link_url)
           elsif link_url =~ /magazine_works/
-            row[:type] = 'magazine'
+            row[:type] = 'magazine_works'
+            row[:magazine_works_id] = clip_id(link_url)
           end
+          row[:title] = tr.css('td:nth-child(1)').text
           row[:auther] = tr.css('td:nth-child(2)').text
           row[:tags] = tr.css('td:nth-child(3)').text
           row[:total_comic_volume] = tr.css('td:nth-child(4)').text
@@ -174,13 +175,60 @@ module MediaArtsDb
         result
       end
 
-
       def parse_magazine_search_result(res_body)
+        result = []
+        doc = Nokogiri::HTML.parse(res_body)
+        doc.css('div.resultTabB table > tbody > tr').each do |tr|
+          row = {}
+          row[:type] = 'magazine_titles'
+          row[:title] = tr.css('td:nth-child(1) > a').text
+          link_url = tr.css('td:nth-child(1) > a').attribute('href').value
+          row[:magazine_titles_id] = clip_id(link_url)
+          row[:publisher] = tr.css('td:nth-child(2)').text
+          row[:published_cycle] = tr.css('td:nth-child(3)').text
+          row[:published_start_date] = tr.css('td:nth-child(4)').text
+          row[:published_end_date] = tr.css('td:nth-child(5)').text
+          row[:tags] = tr.css('td:nth-child(6)').text
 
+          result << row
+        end
+        result
       end
 
       def parse_author_search_result(res_body)
+        result = []
+        doc = Nokogiri::HTML.parse(res_body)
+        doc.css('div.resultTabC table > tbody > tr').each do |tr|
+          row = {}
+          row[:type] = 'none' # 何も値がないレコードがあるので、既定のtypeをnoneにしておく
+          # リンクがauthoritiesとmagazine_worksの場合がある
+          if tr.css('td:nth-child(1) > a').empty?
+            row[:authority_name] = tr.css('td:nth-child(1)').text
+          else
+            row[:type] = 'authority'
+            row[:authority_id] = clip_id(tr.css('td:nth-child(1) > a').attribute('href').value)
+            row[:authority_name] = tr.css('td:nth-child(1) > a').text
+          end
+          row[:authority_name_kana] = tr.css('td:nth-child(2)').text
+          # リンクの場合
+          if tr.css('td:nth-child(3) > a').empty?
+            row[:related_authority_name] = tr.css('td:nth-child(3)').text
+          else
+            row[:related_authority_id] = clip_id(tr.css('td:nth-child(3) > a').attribute('href').value)
+            row[:related_authority_name] = tr.css('td:nth-child(3) > a').text
+          end
+          row[:book_title_quantity] = tr.css('td:nth-child(4)').text
+          if tr.css('td:nth-child(5) > a').empty?
+            row[:magazine_works_name] = tr.css('td:nth-child(5)').text
+          else
+            row[:type] = 'magazine_works'
+            row[:magazine_works_id] = clip_id(tr.css('td:nth-child(5) > a').attribute('href').value)
+            row[:magazine_works_name] = tr.css('td:nth-child(5) > a').text
+          end
 
+          result << row
+        end
+        result
       end
 
       def parse_book_search_result(res_body)
@@ -199,7 +247,7 @@ module MediaArtsDb
             row[:title] = tr.css('td:nth-child(2)').text # 単行本名
           else
             row[:title] = tr.css('td:nth-child(2) > a').text # 単行本名
-            row[:book_id] = tr.css('td:nth-child(2) > a').attribute('href').value.scan(/[0-9]+$/).first
+            row[:book_id] = clip_id(tr.css('td:nth-child(2) > a').attribute('href').value)
           end
           row[:label] = tr.css('td:nth-child(3)').text # 単行本レーベル
           row[:volume] = tr.css('td:nth-child(4)').text # 巻
@@ -253,7 +301,7 @@ module MediaArtsDb
               when '著者典拠ID'
                 # 著者が複数の場合、著者典拠IDも複数になるが、それについてはまだ未実装
                 result[:author_authority_id] = tr.css('td > a').text
-                result[:authority_id] = tr.css('td > a').attribute('href').value.scan(/[0-9]+$/).first
+                result[:authority_id] = clip_id(tr.css('td > a').attribute('href').value)
             end
           end
         end
@@ -264,7 +312,7 @@ module MediaArtsDb
             next if tr.css('td').empty?
             book_title = {}
             book_title[:title] = tr.css('td:nth-child(1) > a').text
-            book_title[:book_titles_id] = tr.css('td:nth-child(1) > a').attribute('href').value.scan(/[0-9]+$/).first
+            book_title[:book_titles_id] = clip_id(tr.css('td:nth-child(1) > a').attribute('href').value)
             book_title[:author] = tr.css('td:nth-child(2)').text
             book_title[:total_book_quantity] = tr.css('td:nth-child(3)').text
             result[:book_titles] << book_title
@@ -277,7 +325,7 @@ module MediaArtsDb
             next if tr.css('td').empty?
             magazine_works = {}
             magazine_works[:title] = tr.css('td:nth-child(1) > a').text
-            magazine_works[:magazine_works_id] = tr.css('td:nth-child(1) > a').attribute('href').value.scan(/[0-9]+$/).first
+            magazine_works[:magazine_works_id] = clip_id(tr.css('td:nth-child(1) > a').attribute('href').value)
             magazine_works[:author] = tr.css('td:nth-child(2)').text
             magazine_works[:magazine_title] = tr.css('td:nth-child(3)').text
             magazine_works[:published_date] = tr.css('td:nth-child(4)').text
@@ -308,9 +356,16 @@ module MediaArtsDb
         params.each_key { |k| query[:query][k] = params[k] }
         http_get(uri, query)
       end
+
+      def clip_id(uri)
+        return nil unless uri.class == String
+        # urlにqueryパラメータがある場合、?以降をを取り除く
+        if uri.include?('?')
+          index = uri =~ /\?/
+          uri = uri[0..index - 1]
+        end
+        uri.slice(/[0-9]+$/)
+      end
     end
-
-
   end
-
 end

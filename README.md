@@ -1,8 +1,6 @@
 # MediaArtsDb
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/media_arts_db`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+media_arts_db is RubyGem to scraping the MediaArtsDataBase(メディア芸術データベース: http://mediaarts-db.jp/).
 
 ## Installation
 
@@ -38,9 +36,11 @@ MediaArtsDb::Comic.search_by_keyword author: 'CLAMP'
 # キーワード引数 options: で使用できるオプションは MediaArtsDb::ComicSearchOption に定義されている
 target = MediaArtsDb::ComicSearchOption::TARGET_BOOK
 options = { MediaArtsDb::ComicSearchOption::TITLE => 'カードキャプター' }
-MediaArtsDb::Comic.search_by_keyword target, options: options
+MediaArtsDb::Comic.search_by_source target, options: options
 # ページング
-# search_by_keyword 及び search_by_keyword はキーワード引数 :per :page にて検索結果の件数指定やページ指定が可能
+# search_by_keyword 及び search_by_source はキーワード引数 :per :page にて検索結果の件数指定やページ指定が可能
+# :per の既定は100、:page の既定は1
+MediaArtsDb::Comic.search_by_keyword title: 'カードキャプター', per: 10, page: 2 # => 11〜20件目の検索結果
 ```
 
 ## Development
