@@ -1,6 +1,10 @@
 module MediaArtsDb
 
   module ComicSearchOption
+    START_YEAR = 'start_year' # 日付範囲指定（From年）
+    START_MONTH = 'start_month' # 日付範囲指定（From月）
+    END_YEAR = 'end_year' # 日付範囲指定（To年）
+    END_MONTH = 'end_month' # 日付範囲指定（To月）
     ID = 1 # ID(ISBNなど)
     TITLE = 2 # 名称
     VOLUME = 3 # 巻・順序
@@ -15,6 +19,19 @@ module MediaArtsDb
     MAGAZINE_DISPLAY_VOLUME = 12 # [雑誌巻号]表示号数
     MAGAZINE_SUB_VOLUME = 13 # [雑誌巻号]補助号数
     MAGAZINE_VOLUME = 14 # [雑誌巻号]巻・号・通巻
+
+    def self.enable_optins_for_time_range
+      [START_YEAR, START_MONTH, END_YEAR, END_MONTH]
+    end
+
+    def self.enable_options
+      [ID, TITLE, VOLUME, PERSON_NAME, AUTHORITY_ID, PUBLISHER, LABEL, BOOK_SHAPE, TAG, CLASSIFICATION, NOTE]
+    end
+
+    def self.enable_options_for_magazine
+      enable_options + [MAGAZINE_DISPLAY_VOLUME, MAGAZINE_SUB_VOLUME, MAGAZINE_VOLUME]
+    end
+
   end
 
   class Comic < HttpBase
@@ -24,14 +41,103 @@ module MediaArtsDb
 
     class << self
 
-      # ページングは未実装
-      def search_title(keyword = nil, per = 100, offset = 0)
-        result = []
-        uri = MediaArtsDb.comic_search_title_uri
-        params = { keyword_title: keyword, per: per, offset: offset }
-        res_body = search_request(uri, params)
-        return result unless res_body
+      def search_by_keyword(title: nil, magazine: nil, author: nil, per: 100, offset: 0)
+        uri = MediaArtsDb.comic_search_uri
+        params = { per: per, offset: offset }
+        if title
+          params[:keyword_title] = title
+          res_body = search_request(uri, params)
+          parse_title_search_result(res_body)
+        elsif magazine
+          params[:keyword_magazine] = magazine
+          res_body = search_request(uri, params)
+          parse_magazine_search_result(res_body)
+        elsif author
+          params[:keyword_author] = author
+          res_body = search_request(uri, params)
+          parse_author_search_result(res_body)
+        else
+          return []
+        end
+      end
 
+      def search_book(options: nil, per: 100, offset: 0)
+        uri = MediaArtsDb.comic_search_uri
+        params = { per: per, offset: offset }
+        params['msf[target][]'] = 1
+        # ID(ISBNなど)、名称、巻・順序、人名、典拠ID、出版者、レーベル、本の形状など、タグ、分類、備考
+        option_index = 1
+        options.each do |key, value|
+          case key
+            when *ComicSearchOption.enable_optins_for_time_range
+              params["msf[#{key}"] = value
+            when *ComicSearchOption.enable_options
+              next if option_index > 5
+              params["msf[select#{option_index}]"] = key
+              params["msf[text#{option_index}]"] = value
+              option_index += 1
+          end
+        end
+
+        res_body = search_request(uri, params)
+        parse_book_search_result(res_body)
+      end
+
+      def search_magazine_volume
+
+      end
+
+      def search_document
+
+      end
+
+      def search_original_picture
+
+      end
+
+      def search_other
+
+      end
+
+
+      def find_comic_works(id)
+        uri = MediaArtsDb.comic_works_uri(id)
+        res_body = http_get(uri)
+        parse_comic_works_resutl(res_body)
+      end
+
+      def find_magazine_works(id)
+
+      end
+
+      def find_book_titles(id)
+
+      end
+
+      def find_book(id)
+
+      end
+
+      def find_magazine_titles(id)
+
+      end
+
+      def find_magazine(id)
+
+      end
+
+      def find_booklet(id)
+        # 未実装
+      end
+
+      def find_authority(id)
+
+      end
+
+      private
+
+      def parse_title_search_result(res_body)
+        result = []
         doc = Nokogiri::HTML.parse(res_body)
         doc.css('div.resultTabA table > tbody > tr').each do |tr|
           row = {}
@@ -54,114 +160,49 @@ module MediaArtsDb
 
           result << row
         end
-
         result
       end
 
-      def search_magazine(keyword = nil, per = 100, offset = 0)
-        result = []
-        uri = MediaArtsDb.comic_search_magazine_uri
-        params = { keyword_magazine: keyword, per: per, offset: offset }
-        res_body = search_request(uri, params)
-        return result unless res_body
 
+      def parse_magazine_search_result(res_body)
 
       end
 
-      def search_authority(keyword = nil, per = 100, offset = 0)
-        result = []
-        uri = MediaArtsDb.comic_search_authority_uri
-        params = { keyword_author: keyword, per: per, offset: offset }
-        res_body = search_request(uri, params)
-        return result unless res_body
-
-
+      def parse_author_search_result(res_body)
 
       end
 
-      def search_separate_book(start_date = nil, end_date = nil, detail = nil, per = 100, offset = 0)
+      def parse_book_search_result(res_body)
         result = []
-        uri = MediaArtsDb.comic_search_uri
-
-        query_params = {
-            'msf[target][]' => 1,
-            # 'msf[target][]' => 2,
-            # 'msf[target][]' => 3,
-            # 'msf[target][]' => 4,
-            # 'msf[target][]' => 5,
-            # 'msf[start_year]' => '',
-            # 'msf[start_month]' => '',
-            # 'msf[end_year]' => '',
-            # 'msf[end_month]' => '',
-            # 'msf[code]' => '',
-            # 'msf[select1]' => '',
-            # 'msf[text1]' => '',
-            # 'msf[select2]' => '',
-            # 'msf[text2]' => '',
-            # 'msf[select3]' => '',
-            # 'msf[text3]' => '',
-            # 'msf[select4]' => '',
-            # 'msf[text4]' => '',
-            # 'msf[select5]' => '',
-            # 'msf[text5]' => '',
-            per: per,
-            offset: offset
-        }
-        if start_date && start_date.class.include?(Date)
-          query_params['msf[start_year]'] = start_date.year
-          query_params['msf[start_month]'] = start_date.month
-        end
-        if end_date && end_date.class.include?(Date)
-          query_params['msf[end_year]'] = end_date.year
-          query_params['msf[end_month]'] = end_date.month
-        end
-
-        # ID(ISBNなど)、名称、巻・順序、人名、典拠ID、出版者、レーベル、本の形状など、タグ、分類、備考
-        detail.each_with_index do |(key, value), index|
-          break if index >= 5
-          query_params["msf[select#{index + 1}]"] = key
-          query_params["msf[text#{index + 1}]"] = value
-        end
-
-        res_body = search_request(uri, query_params)
-        return result unless res_body
-
         doc = Nokogiri::HTML.parse(res_body)
         doc.css('div.resultTabD_subA > div > table > tbody > tr').each do |tr|
           row = {}
           tmp_id = tr.css('td:nth-child(1)').text.split('<br>')
           if tmp_id.count == 1
-            # row[:separate_book_id] = tmp_id[0].gsub(/(\(|\))/, '')
+            # row[:separate_book_id] = tmp_id[0].gsub(/(\(|\))/, '') # 単行ID
           else
-            row[:isbn] = tmp_id[0]
-            # row[:separate_book_id] = tmp_id[1].gsub(/(\(|\))/, '')
+            row[:isbn] = tmp_id[0]  # ISBN
+            # row[:separate_book_id] = tmp_id[1].gsub(/(\(|\))/, '') # 単行ID
           end
           if tr.css('td:nth-child(2) > a').empty?
-            row[:book_title] = tr.css('td:nth-child(2)').text
+            row[:title] = tr.css('td:nth-child(2)').text # 単行本名
           else
-            row[:book_title] = tr.css('td:nth-child(2) > a').text
+            row[:title] = tr.css('td:nth-child(2) > a').text # 単行本名
             row[:book_id] = tr.css('td:nth-child(2) > a').attribute('href').value.scan(/[0-9]+$/).first
           end
-          row[:label] = tr.css('td:nth-child(3)').text
-          row[:volume] = tr.css('td:nth-child(4)').text
-          row[:author] = tr.css('td:nth-child(5)').text
-          row[:publisher] = tr.css('td:nth-child(6)').text
-          row[:published_date] = tr.css('td:nth-child(7)').text
+          row[:label] = tr.css('td:nth-child(3)').text # 単行本レーベル
+          row[:volume] = tr.css('td:nth-child(4)').text # 巻
+          row[:author] = tr.css('td:nth-child(5)').text # 著者名
+          row[:publisher] = tr.css('td:nth-child(6)').text # 出版者
+          row[:published_date] = tr.css('td:nth-child(7)').text # 発行年月
 
           result << row
         end
-
         result
       end
 
-
-      def find_comic_works(id)
+      def parse_comic_works_resutl(res_body)
         result = {}
-
-        uri = MediaArtsDb.comic_works_uri(id)
-        res_body = http_get(uri)
-        return result unless res_body
-
         doc = Nokogiri::HTML.parse(res_body)
         doc.css('body > article > div.main > section > table > tbody > tr').each do |tr|
           if tr.css('td > a').empty?
@@ -229,36 +270,6 @@ module MediaArtsDb
 
         result
       end
-
-      def find_magazine_works(id)
-
-      end
-
-      def find_book_titles(id)
-
-      end
-
-      def find_book(id)
-
-      end
-
-      def find_magazine_titles(id)
-
-      end
-
-      def find_magazine(id)
-
-      end
-
-      def find_booklet(id)
-        # 未実装
-      end
-
-      def find_authority(id)
-
-      end
-
-      private
 
       def search_request(uri, params)
         query = {

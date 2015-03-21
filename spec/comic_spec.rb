@@ -6,7 +6,7 @@ describe MediaArtsDb::Comic do
 
     context 'parameter nothing' do
       it 'returns empty array.' do
-        results = MediaArtsDb::Comic.search_title()
+        results = MediaArtsDb::Comic.search_by_keyword
         expect(results).to eq []
       end
     end
@@ -14,7 +14,7 @@ describe MediaArtsDb::Comic do
     context 'parameter title' do
 
       it 'returns 5 results' do
-        results = MediaArtsDb::Comic.search_title('カードキャプター')
+        results = MediaArtsDb::Comic.search_by_keyword title: 'カードキャプター'
         expect(results.count).to be 5
         expect(results[0][:title]).to eq 'カードキャプターさくら'
         expect(results[0][:type]).to eq 'comic'
@@ -24,12 +24,21 @@ describe MediaArtsDb::Comic do
 
   end
 
-  describe '#search_separate_book' do
+  describe '#search_book' do
     context 'parameter title' do
       it 'returns 51 records' do
-        detail = {MediaArtsDb::ComicSearchOption::TITLE => 'カードキャプター'}
-        results = MediaArtsDb::Comic.search_separate_book(nil, nil, detail)
+        options = {MediaArtsDb::ComicSearchOption::TITLE => 'カードキャプター'}
+        results = MediaArtsDb::Comic.search_book options: options
         expect(results.count).to be 51
+      end
+    end
+    context 'paramater isbn' do
+      it 'returns 1 record' do
+        options = {MediaArtsDb::ComicSearchOption::ID => '4063197433'}
+        results = MediaArtsDb::Comic.search_book options: options
+        expect(results.count).to be 1
+        expect(results[0][:title]).to eq 'カードキャプターさくら'
+        expect(results[0][:volume]).to eq '1'
       end
     end
   end

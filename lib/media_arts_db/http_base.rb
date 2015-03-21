@@ -11,6 +11,7 @@ module MediaArtsDb
                   else
                     Addressable::URI.parse(uri)
                   end
+        # p uri_obj
         request(uri_obj)
       end
 
