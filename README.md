@@ -45,7 +45,7 @@ results = MediaArtsDb::Comic.search_by_keyword author: 'CLAMP'
 # キーワード引数 options: は、検索条件を指定する。使用できるオプションは MediaArtsDb::ComicSearchOption に定義されている
 target = MediaArtsDb::ComicSearchOption::TARGET_COMIC
 options = { MediaArtsDb::ComicSearchOption::TITLE => 'カードキャプター' }
-results = MediaArtsDb::Comic.search_by_source targer: target, options: options
+results = MediaArtsDb::Comic.search_by_source target: target, options: options
 # => 検索結果は、targetにより以下が返る
 # - TARGET_BOOKの場合、comic_id(マンガ単行本情報のID)
 # - TARGET_MAGAZINEの場合、magazine_id(マンガ雑誌情報のID)

@@ -71,7 +71,7 @@ module MediaArtsDb
         end
       end
 
-      def search_by_source(target: TARGET_COMIC, options: nil, per: 100, page: 1)
+      def search_by_source(target: ComicSearchOption::TARGET_COMIC, options: {}, per: 100, page: 1)
         return [] unless ComicSearchOption.enable_targets.include?(target)
         uri = MediaArtsDb.comic_search_uri
         params = { per: per, page: page }
@@ -87,7 +87,7 @@ module MediaArtsDb
               params["msf[text#{option_index}]"] = value
               option_index += 1
             when *ComicSearchOption.enable_options_for_magazine
-              next unless target == TARGET_MAGAZINE_VOLUME
+              next unless target == ComicSearchOption::TARGET_MAGAZINE_VOLUME
               next if option_index > 5
               params["msf[select#{option_index}]"] = key
               params["msf[text#{option_index}]"] = value
@@ -97,15 +97,15 @@ module MediaArtsDb
 
         res_body = search_request(uri, params)
         case target
-          when TARGET_COMIC
+          when ComicSearchOption::TARGET_COMIC
             parse_comic_search_result(res_body)
-          when TARGET_MAGAZINE_VOLUME
+          when ComicSearchOption::TARGET_MAGAZINE_VOLUME
             parse_magazine_volume_search_result(res_body)
-          when TARGET_MATERIAL
+          when ComicSearchOption::TARGET_MATERIAL
             parse_material_search_result(res_body)
-          when TARGET_ORIGINAL_PICTURE
+          when ComicSearchOption::TARGET_ORIGINAL_PICTURE
             parse_original_picture_search_result(res_body)
-          when TARGET_BOOKLET
+          when ComicSearchOption::TARGET_BOOKLET
             parse_booklet_search_result(res_body)
         end
       end
@@ -236,20 +236,15 @@ module MediaArtsDb
             row[:author_name] = clip_text(tr.css('td:nth-child(1)'))
           end
           row[:author_name_kana] = tr.css('td:nth-child(2)').text
-          # リンクの場合
-          if tr.css('td:nth-child(3) > a').empty?
-            row[:related_author_name] = tr.css('td:nth-child(3)').text
-          else
-            row[:related_author_id] = clip_id(tr.css('td:nth-child(3) > a'))
-            row[:related_author_name] = clip_text(tr.css('td:nth-child(3)'))
-          end
+          row[:related_author_id] = clip_id(tr.css('td:nth-child(3) > a'))
+          row[:related_author_name] = clip_text(tr.css('td:nth-child(3)')).gsub(/\n/, '').strip
           row[:comic_title_quantity] = tr.css('td:nth-child(4)').text
           if tr.css('td:nth-child(5) > a').empty?
-            row[:magazine_works_name] = tr.css('td:nth-child(5)').text
+            row[:magazine_works_name] = tr.css('td:nth-child(5)').text.gsub(/\n/, '').strip
           else
             row[:type] = 'magazine_works'
             row[:magazine_works_id] = clip_id(tr.css('td:nth-child(5) > a'))
-            row[:magazine_works_name] = clip_text(tr.css('td:nth-child(5)'))
+            row[:magazine_works_name] = clip_text(tr.css('td:nth-child(5)')).gsub(/\n/, '').strip
           end
 
           result << row
@@ -641,7 +636,7 @@ module MediaArtsDb
             when '発行月日(合併)' ; basic_information[:published_date_merger] = tr.css('td').text
             when '発売年月日' ; basic_information[:release_date] = tr.css('td').text
             when '表示号数' ; basic_information[:display_volume] = tr.css('td').text
-            when '表示合併号数' ; basic_information[:display_merger_volume] = tr.css('td').text
+            when '表示合併号数' ; basic_information[:display_merger_volume] = tr.css('td').text.gsub(/\n/, '').strip
             when '補助号数' ; basic_information[:display_sub_volume] = tr.css('td').text
             when '巻'
               basic_information[:volume] = tr.css('td:nth-child(2)').text
