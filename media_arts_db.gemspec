@@ -6,11 +6,11 @@ require 'media_arts_db/version'
 Gem::Specification.new do |spec|
   spec.name          = "media_arts_db"
   spec.version       = MediaArtsDb::VERSION
-  spec.authors       = ["bisque33"]
+  spec.authors       = ["bisque"]
   spec.email         = ["bisque33@gmail.com"]
 
   if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = ""
+    spec.metadata['allowed_push_host'] = "https://rubygems.org"
   end
 
   spec.summary       = %q{media_arts_db is data access wrapper for http://mediaarts-db.jp/}
