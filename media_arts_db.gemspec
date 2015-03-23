@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
   end
 
   spec.summary       = %q{media_arts_db is data access wrapper for http://mediaarts-db.jp/}
-  spec.description   = %q{media_arts_db is to be able to data access easily from http://mediaarts-db.jp/}
+  spec.description   = %q{media_arts_db is able to get data easily from http://mediaarts-db.jp/}
   spec.homepage      = "https://github.com/bisque33/media_arts_db"
   spec.license       = "MIT"
 
