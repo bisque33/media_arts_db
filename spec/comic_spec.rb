@@ -4,7 +4,7 @@ include MediaArtsDb
 include MediaArtsDb::ComicSearchOption
 
 describe MediaArtsDb::Comic do
-=begin
+# =begin
   describe '#search_by_keyword' do
     context 'parameter nothing' do
       it 'returns empty array.' do
@@ -104,13 +104,13 @@ describe MediaArtsDb::Comic do
       end
       it 'has many values as a authority' do
         @results.each do |result|
-          if result[:type] == 'authority'
-            expect(result[:type]).to eq 'authority'
+          if result[:type] == 'author'
+            expect(result[:type]).to eq 'author'
             expect(result[:author_id]).to be_truthy
-            expect(result[:authority_name]).to be_truthy
-            expect(result[:authority_name_kana]).to be_truthy
-            expect(result[:related_authority_name]).to be_truthy
-            expect(result[:book_title_quantity]).to be_truthy
+            expect(result[:author_name]).to be_truthy
+            expect(result[:author_name_kana]).to be_truthy
+            expect(result[:related_author_name]).to be_truthy
+            expect(result[:comic_title_quantity]).to be_truthy
             expect(result[:magazine_works_name]).to be_truthy
             expect(result[:magazine_works_id]).to be_nil
             break
@@ -122,10 +122,10 @@ describe MediaArtsDb::Comic do
           if result[:type] == 'magazine_works'
             expect(result[:type]).to eq 'magazine_works'
             expect(result[:author_id]).to be_nil
-            expect(result[:authority_name]).to be_truthy
-            expect(result[:authority_name_kana]).to be_truthy
-            expect(result[:related_authority_name]).to be_truthy
-            expect(result[:book_title_quantity]).to be_truthy
+            expect(result[:author_name]).to be_truthy
+            expect(result[:author_name_kana]).to be_truthy
+            expect(result[:related_author_name]).to be_truthy
+            expect(result[:comic_title_quantity]).to be_truthy
             expect(result[:magazine_works_name]).to be_truthy
             expect(result[:magazine_works_id]).to be_truthy
             break
@@ -137,10 +137,10 @@ describe MediaArtsDb::Comic do
           if result[:type] == 'none'
             expect(result[:type]).to eq 'none'
             expect(result[:author_id]).to be_nil
-            expect(result[:authority_name]).to be_truthy
-            expect(result[:authority_name_kana]).to be_truthy
-            expect(result[:related_authority_name]).to be_truthy
-            expect(result[:book_title_quantity]).to be_truthy
+            expect(result[:author_name]).to be_truthy
+            expect(result[:author_name_kana]).to be_truthy
+            expect(result[:related_author_name]).to be_truthy
+            expect(result[:comic_title_quantity]).to be_truthy
             expect(result[:magazine_works_name]).to be_truthy
             expect(result[:magazine_works_id]).to be_nil
             break
@@ -169,7 +169,7 @@ describe MediaArtsDb::Comic do
   end
 
   describe '#search_by_source' do
-    describe 'TARGET_BOOK' do
+    describe 'TARGET_COMIC' do
       context 'parameter options TITLE but no hit' do
         it 'returns many records' do
           options = {ComicSearchOption::TITLE => '該当なし'}
@@ -186,10 +186,10 @@ describe MediaArtsDb::Comic do
         it 'has many values' do
           options = {ComicSearchOption::TITLE => 'カードキャプター'}
           results = Comic.search_by_source options: options
-          expect(results[0][:type]).to eq 'book'
+          expect(results[0][:type]).to eq 'comic'
           expect(results[0][:isbn]).to be_truthy
-          expect(results[0][:book_title]).to be_truthy
-          expect(results[0][:book_id]).to be_truthy
+          expect(results[0][:comic_title]).to be_truthy
+          expect(results[0][:comic_id]).to be_truthy
           expect(results[0][:label]).to be_truthy
           expect(results[0][:volume]).to be_truthy
           expect(results[0][:author]).to be_truthy
@@ -212,7 +212,7 @@ describe MediaArtsDb::Comic do
           options = {ComicSearchOption::ID => '4063197433'}
           results = Comic.search_by_source options: options
           expect(results.count).to be 1
-          expect(results[0][:book_title]).to eq 'カードキャプターさくら'
+          expect(results[0][:comic_title]).to eq 'カードキャプターさくら'
           expect(results[0][:volume]).to eq '1'
         end
       end
@@ -266,6 +266,8 @@ describe MediaArtsDb::Comic do
         end
       end
     end
+
+=begin # 2015/03/23 検索しても値が表示されなくなった
     describe 'TARGET_MATERIAL' do
       context 'parameter options TITLE but no hit' do
         it 'returns many records' do
@@ -294,6 +296,8 @@ describe MediaArtsDb::Comic do
         end
       end
     end
+=end
+
     describe 'TARGET_ORIGINAL_PICTURE' do
       context 'parameter options TITLE but no hit' do
         it 'returns many records' do
@@ -377,22 +381,22 @@ describe MediaArtsDb::Comic do
         expect(result[:rating]).to be_truthy
         # expect(result[:author_author_id]).to be_truthy
         expect(result[:author_id]).to be_truthy
-        expect(result[:book_titles]).to be_truthy
+        expect(result[:comic_titles]).to be_truthy
         expect(result[:magazine_works]).to be_truthy
       end
     end
   end
 
-  describe '#find_book_titles' do
+  describe '#find_comic_titles' do
     context 'parameter id but no hit' do
       it 'returns empty hash' do
-        result = Comic.find_book_titles('00000')
+        result = Comic.find_comic_titles('00000')
         expect(result.class).to eq Hash
       end
     end
     context 'parameter id' do
       it 'has many values' do
-        result = Comic.find_book_titles('116326')
+        result = Comic.find_comic_titles('116326')
         expect(result[:comic_works_id]).to be_truthy
         expect(result[:title]).to be_truthy
         expect(result[:title_kana]).to be_truthy
@@ -404,8 +408,8 @@ describe MediaArtsDb::Comic do
         expect(result[:author_id]).to be_truthy
         expect(result[:author]).to be_truthy
         expect(result[:author_kana]).to be_truthy
-        expect(result[:origina_title]).to be_truthy
-        expect(result[:origina_title_kana]).to be_truthy
+        expect(result[:origina]).to be_truthy
+        expect(result[:origina_kana]).to be_truthy
         expect(result[:collaborator]).to be_truthy
         expect(result[:collaborator_kana]).to be_truthy
         expect(result[:headings]).to be_truthy
@@ -424,37 +428,37 @@ describe MediaArtsDb::Comic do
         expect(result[:tags]).to be_truthy
         expect(result[:note]).to be_truthy
 
-        expect(result[:books]).to be_truthy
-        expect(result[:books][0][:title]).to be_truthy
-        expect(result[:books][0][:book_id]).to be_truthy
-        expect(result[:books][0][:book_title_append]).to be_truthy
-        expect(result[:books][0][:volume]).to be_truthy
+        expect(result[:comics]).to be_truthy
+        expect(result[:comics][0][:title]).to be_truthy
+        expect(result[:comics][0][:comic_id]).to be_truthy
+        expect(result[:comics][0][:comic_title_append]).to be_truthy
+        expect(result[:comics][0][:volume]).to be_truthy
       end
     end
     context 'paramater :per' do
       it 'returns 3 results' do
-        result = Comic.find_book_titles('116326', per: 3)
-        expect(result[:books].count).to eq 3
+        result = Comic.find_comic_titles('116326', per: 3)
+        expect(result[:comics].count).to eq 3
       end
     end
     context 'paramater :per and :page' do
       it 'returns 5 results' do
-        result = Comic.find_book_titles('116326', per:5, page: 2)
-        expect(result[:books].count).to eq 5
+        result = Comic.find_comic_titles('116326', per:5, page: 2)
+        expect(result[:comics].count).to eq 5
       end
     end
   end
-=end
-  describe '#find_book' do
+
+  describe '#find_comic' do
     context 'parameter id but no hit' do
       it 'returns empty hash' do
-        result = Comic.find_book('00000')
+        result = Comic.find_comic('00000')
         expect(result.class).to eq Hash
       end
     end
     context 'parameter id' do
       it 'has many values' do
-        result = Comic.find_book('1216047')
+        result = Comic.find_comic('1216047')
         expect(result.class).to eq Hash
         expect(result[:basic_information]).to be_truthy
         expect(result[:author_information]).to be_truthy
@@ -482,7 +486,7 @@ describe MediaArtsDb::Comic do
     end
   end
 
-# =begin # 時間がかかるので通常はコメントアウト
+# =begin # 時間がかかるので必要な時以外はコメントアウト
 
   describe '#find_magazine_titles' do
     context 'parameter id but no hit' do
@@ -500,9 +504,8 @@ describe MediaArtsDb::Comic do
       end
     end
   end
-
-
-  describe '#find_magazine_titles' do
+# =end
+  describe '#find_magazines' do
     context 'parameter id but no hit' do
       it 'returns empty hash' do
         result = Comic.find_magazine('00000')
@@ -514,6 +517,74 @@ describe MediaArtsDb::Comic do
         result = Comic.find_magazine('381207')
         expect(result.class).to eq Hash
         expect(result[:contents]).to be_truthy
+        # p result
+      end
+    end
+  end
+
+  describe '#find_author' do
+    context 'parameter id but no hit' do
+      it 'returns empty hash' do
+        result = Comic.find_author('00000')
+        expect(result.class).to eq Hash
+      end
+    end
+    context 'parameter id' do
+      it 'has many values' do
+        result = Comic.find_author('6215')
+        expect(result.class).to eq Hash
+        expect(result[:comic_works]).to be_truthy
+        expect(result[:comic_titles]).to be_truthy
+        # p result
+      end
+    end
+  end
+
+  # 未実装
+  describe '#find_material' do
+    context 'parameter id but no hit' do
+      it 'returns empty hash' do
+        result = Comic.find_material('00000')
+        expect(result.class).to eq Hash
+      end
+    end
+    context 'parameter id' do
+      it 'has many values' do
+        result = Comic.find_material('xxxx')
+        expect(result.class).to eq Hash
+        # p result
+      end
+    end
+  end
+
+  # 未実装
+  describe '#find_original_picture' do
+    context 'parameter id but no hit' do
+      it 'returns empty hash' do
+        result = Comic.find_original_picture('00000')
+        expect(result.class).to eq Hash
+      end
+    end
+    context 'parameter id' do
+      it 'has many values' do
+        result = Comic.find_original_picture('xxxx')
+        expect(result.class).to eq Hash
+        # p result
+      end
+    end
+  end
+# =end
+  describe '#find_booklet' do
+    context 'parameter id but no hit' do
+      it 'returns empty hash' do
+        result = Comic.find_booklet('00000')
+        expect(result.class).to eq Hash
+      end
+    end
+    context 'parameter id' do
+      it 'has many values' do
+        result = Comic.find_booklet('2')
+        expect(result.class).to eq Hash
         # p result
       end
     end
