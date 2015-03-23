@@ -2,6 +2,8 @@
 
 media_arts_db is RubyGem to scraping to the MediaArtsDataBase(メディア芸術データベース: http://mediaarts-db.jp/).
 
+[![Build Status](https://travis-ci.org/bisque33/media_arts_db.svg?branch=master)](https://travis-ci.org/bisque33/media_arts_db)
+
 ## Installation
 
 Add this line to your application's Gemfile:
