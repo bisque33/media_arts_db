@@ -1,10 +1,10 @@
 require 'spec_helper'
+=begin
 
 include MediaArtsDb
 include MediaArtsDb::ComicSearchOption
 
 describe MediaArtsDb::Comic do
-# =begin
   describe '#search_by_keyword' do
     context 'parameter nothing' do
       it 'returns empty array.' do
@@ -297,7 +297,7 @@ describe MediaArtsDb::Comic do
       end
     end
 =end
-
+=begin
     describe 'TARGET_ORIGINAL_PICTURE' do
       context 'parameter options TITLE but no hit' do
         it 'returns many records' do
@@ -590,3 +590,4 @@ describe MediaArtsDb::Comic do
     end
   end
 end
+=end

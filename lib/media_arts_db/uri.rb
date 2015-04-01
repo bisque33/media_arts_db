@@ -6,11 +6,11 @@ module MediaArtsDb
     "#{BASE_URI}/mg/results"
   end
 
-  def self.comic_comic_works_uri(id)
+  def self.comic_comic_work_uri(id)
     "#{BASE_URI}/mg/comic_works/#{id}"
   end
 
-  def self.comic_comic_titles_uri(id)
+  def self.comic_comic_title_uri(id)
     "#{BASE_URI}/mg/book_titles/#{id}"
   end
 
@@ -18,11 +18,11 @@ module MediaArtsDb
     "#{BASE_URI}/mg/books/#{id}"
   end
 
-  def self.comic_magazine_works_uri(id)
+  def self.comic_magazine_work_uri(id)
     "#{BASE_URI}/mg/magazine_works/#{id}"
   end
 
-  def self.comic_magazine_titles_uri(id)
+  def self.comic_magazine_title_uri(id)
     "#{BASE_URI}/mg/magazine_titles/#{id}"
   end
 
