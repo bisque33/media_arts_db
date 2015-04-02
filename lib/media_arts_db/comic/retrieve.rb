@@ -50,6 +50,10 @@ module MediaArtsDb
       # end
     end
 
+    class SearchOptionBuilder
+
+    end
+
     class SearchWork < RetrieveTemplate
 
       def initialize(keyword, per: 100, page: 1)
@@ -129,22 +133,28 @@ module MediaArtsDb
     end
 
     class FindTemplate < RetrieveTemplate
+      attr_accessor :id
       def initialize(id)
-        self.id = id
+        @id = id
+      end
+
+      def execute
+        class_name = @name.split(/_/).map(&:capitalize).join
+        Object.const_get(class_name).new(@id, super(), true)
       end
 
       private
 
       def request
-        HttpBase.get(@uri)
+        HttpBase.get(uri)
       end
 
       def parse(response_body)
         Parse.send("parse_#{@name}", response_body)
       end
 
-      def id=(new_id)
-        @uri = MediaArtsDb.send("comic_#{@name}_uri", new_id)
+      def uri
+        MediaArtsDb.send("comic_#{@name}_uri", @id)
       end
     end
 
@@ -158,14 +168,15 @@ module MediaArtsDb
     class FindComicTitle < FindTemplate
       def initialize(id)
         @name = 'comic_title'
-        @query = query_builder({per: 1000}) # ページングは実装せずに、一度に取得する
+        @query = query_builder({per: 1000}) # ページングはせずに、一度に大きく取得する
         super(id)
       end
 
       private
 
+      # ComicTitleだけ結果にページングがあるので@queryを渡す必要がある
       def request
-        HttpBase.get(@uri, @query)
+        HttpBase.get(uri, @query)
       end
     end
 
