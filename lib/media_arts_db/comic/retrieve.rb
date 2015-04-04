@@ -244,7 +244,7 @@ module MediaArtsDb
 
       def execute
         class_name = @name.split(/_/).map(&:capitalize).join
-        Object.const_get(class_name).new(@id, super(), true)
+        MediaArtsDb::Comic.const_get(class_name).new(@id, super(), true)
       end
 
       private

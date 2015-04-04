@@ -1,7 +1,7 @@
 module MediaArtsDb
   module Comic
     class Component
-      attr_reader :id, :content
+      attr_reader :id
 
       def initialize(id, content = {}, retrieved = false)
         @id = id
@@ -23,6 +23,18 @@ module MediaArtsDb
 
       def method_missing(name, *args)
         self[name.to_sym]
+      end
+
+      def content
+        unless retrieved?
+          @content.merge!(@retriever.execute.content)
+          @retrieved = true
+        end
+        @content
+      end
+
+      def content_cache
+        @content
       end
 
       private

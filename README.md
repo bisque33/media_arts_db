@@ -26,6 +26,8 @@ Or install it yourself as:
 
 Search and find the information from the Comic Database.
 
+検索方法
+
 ```ruby
 # 作品名(TITLE)で検索
 search = MediaArtsDb::Comic::SearchWork.new('カードキャプター')
@@ -33,17 +35,15 @@ search.execute
 # => 検索結果は、ComicWork(マンガ単行本作品情報)とMagazineWork(マンガ雑誌作品情報)が混在する配列が返る
 
 # 雑誌名(MAGAZINE)で検索
-search = MediaArtsDb::Comic::SearchMagazine.new('なかよし', per: 10)
+search = MediaArtsDb::Comic::SearchMagazine.new('なかよし', per: 10, page: 2)
 search.execute
-# => 検索結果は、MagazineTitle(マンガ雑誌基本情報)の配列が返る（1-10件目）
+# => 検索結果は、MagazineTitle(マンガ雑誌基本情報)の配列が返る（11-20件目）
 
 # 著者名(AUTHOR)で検索
-search = MediaArtsDb::Comic::SearchMagazine.new('CLAMP', per: 10, page: 2)
+search = MediaArtsDb::Comic::SearchAuthor.new('CLAMP')
 search.execute
-# => 検索結果は、Author(著者情報)の配列が返る（11-20件目）
-```
+# => 検索結果は、Author(著者情報)の配列が返る
 
-```ruby
 # 単行本・雑誌・資料(SOURCE)で検索
 # まず検索条件を指定するためにSearchOptionBuilderクラスにパラメータを設定する
 # .target_xxxはどの検索結果を取得するかの設定で、必須項目
@@ -62,27 +62,55 @@ search = MediaArtsDb::Comic::Search.new(option)
 # - option.target_bookletの場合、Booklet(その他冊子情報)の配列が返る
 ```
 
+検索結果の取得
+
+```ruby
+# 検索
+search = MediaArtsDb::Comic::SearchWork.new('カードキャプター')
+results = search.execute
+# 値の取得
+results.first.title
+results.first[:title] # キーワードでも取得可能
+# すべての値の取得
+results.first.content # 詳細ページから全ての情報を取得して返す
+results.first.content_cache # 検索結果で得られた情報のみを返す
+# 結果のネスト
+results.first.comic_titles[0].comics[0].published_date
+```
+
+個別要素の検索
+
 ```ruby
 # ComicWork(マンガ単行本作品情報)の詳細情報取得
-result = MediaArtsDb::Comic::FindComicWork.new(comic_work_id)
+finder = MediaArtsDb::Comic::FindComicWork.new(comic_work_id)
+finder.execute
 # ComicTitle(マンガ単行本全巻情報)の詳細情報取得
-result = MediaArtsDb::Comic::FindComicTitle.new(comic_title_id)
+finder = MediaArtsDb::Comic::FindComicTitle.new(comic_title_id)
+finder.execute
 # Comic(マンガ単行本情報)の詳細情報取得
-result = MediaArtsDb::Comic::FindComic.new(comic_id)
+finder = MediaArtsDb::Comic::FindComic.new(comic_id)
+finder.execute
 # MagazineWork(マンガ雑誌作品情報)の詳細情報取得
-result = MediaArtsDb::Comic::FindMagazineWork.new(magazine_works_id)
+finder = MediaArtsDb::Comic::FindMagazineWork.new(magazine_works_id)
+finder.execute
 # MagazineTitle(マンガ雑誌全巻情報)の詳細情報取得
-result = MediaArtsDb::Comic::FindMagazineTitle.new(magazine_titles_id)
+finder = MediaArtsDb::Comic::FindMagazineTitle.new(magazine_titles_id)
+finder.execute
 # Magazine(マンガ雑誌情報)の詳細情報取得
-result = MediaArtsDb::Comic::FindMagazine.new(magazine_id)
+finder = MediaArtsDb::Comic::FindMagazine.new(magazine_id)
+finder.execute
 # Author(著者情報)の詳細情報取得
-result = MediaArtsDb::Comic::FindAuthor.new(author_id)
+finder = MediaArtsDb::Comic::FindAuthor.new(author_id)
+finder.execute
 # Material(資料情報)の詳細情報取得
-result = MediaArtsDb::Comic::FindMaterial.new(material_id)
+finder = MediaArtsDb::Comic::FindMaterial.new(material_id)
+finder.execute
 # OriginalPicture(原画情報)の詳細情報取得
-result = MediaArtsDb::Comic::FindOriginalPicture.new(original_picture_id)
+finder = MediaArtsDb::Comic::FindOriginalPicture.new(original_picture_id)
+finder.execute
 # Booklet(その他冊子情報)の詳細情報取得
-result = MediaArtsDb::Comic::FindBooklet.new(booklet_id)
+finder = MediaArtsDb::Comic::FindBooklet.new(booklet_id)
+finder.execute
 ```
 
 ### Animation
