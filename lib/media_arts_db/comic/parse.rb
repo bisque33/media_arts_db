@@ -1,3 +1,5 @@
+require "nokogiri"
+
 module MediaArtsDb
   module Comic
     class Parse
@@ -66,7 +68,7 @@ module MediaArtsDb
           contents
         end
 
-        def parse_search_comic(response_body)
+        def parse_search_target_comic(response_body)
           contents = []
           doc = Nokogiri::HTML.parse(response_body)
           doc.css('div.resultTabD_subA > div > table > tbody > tr').each do |tr|
@@ -85,7 +87,7 @@ module MediaArtsDb
           contents
         end
 
-        def parse_search_magazine_volume(response_body)
+        def parse_search_target_magazine(response_body)
           contents = []
           doc = Nokogiri::HTML.parse(response_body)
           doc.css('div.resultTabD_subB > div > table > tbody > tr').each do |tr|
@@ -102,7 +104,7 @@ module MediaArtsDb
           contents
         end
 
-        def parse_search_material(response_body)
+        def parse_search_target_material(response_body)
           contents = []
           doc = Nokogiri::HTML.parse(response_body)
           doc.css('div.resultTabD_subC > div > table > tbody > tr').each do |tr|
@@ -119,7 +121,7 @@ module MediaArtsDb
           contents
         end
 
-        def parse_search_original_picture(response_body)
+        def parse_search_target_original_picture(response_body)
           contents = []
           doc = Nokogiri::HTML.parse(response_body)
           doc.css('div.resultTabD_subD > div > table > tbody > tr').each do |tr|
@@ -137,7 +139,7 @@ module MediaArtsDb
           contents
         end
 
-        def parse_search_booklet(response_body)
+        def parse_search_target_booklet(response_body)
           contents = []
           doc = Nokogiri::HTML.parse(response_body)
           doc.css('div.resultTabD_subE > div > table > tbody > tr').each do |tr|

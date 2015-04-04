@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'pp'
 
 include MediaArtsDb::Comic
-=begin
+# =begin
 describe MediaArtsDb::Comic::RetrieveTemplate do
   describe '#execute' do
     it 'returns false' do
@@ -114,16 +114,16 @@ describe MediaArtsDb::Comic::SearchAuthor do
         break
       end
     end
-    # データベースの内容が変更されるとテストが通らなくなる可能性あり
-    it 'has 1 records' do
-      request = SearchAuthor.new('冨樫義博', per: 1)
-      expect(request.execute.count).to eq 1
-    end
-    it 'has 11 to 20 record' do
-      request1 = SearchAuthor.new('冨樫義博', per: 1, page:1)
-      request2 = SearchAuthor.new('冨樫義博', per: 1, page:2)
-      expect(request1.execute.first.name).not_to eq request2.execute.first.name
-    end
+    # Author以外の結果が先頭に来るためテストできるキーワードが見つからない
+    # it 'has 1 records' do
+    #   request = SearchAuthor.new('冨樫義博', per: 1)
+    #   expect(request.execute.count).to eq 1
+    # end
+    # it 'has 11 to 20 record' do
+    #   request1 = SearchAuthor.new('冨樫義博', per: 1, page:1)
+    #   request2 = SearchAuthor.new('冨樫義博', per: 1, page:2)
+    #   expect(request1.execute.first.name).not_to eq request2.execute.first.name
+    # end
   end
 end
 
@@ -137,7 +137,7 @@ describe MediaArtsDb::Comic::FindComicWork do
       expect(@result.class).to eq ComicWork
     end
     it 'returns content' do
-      pp @result
+      # pp @result
       expect(@result.id).to be_truthy
       expect(@result.content).to be_truthy
       expect(@result[:title]).to be_truthy
@@ -160,7 +160,7 @@ describe MediaArtsDb::Comic::FindComicTitle do
       expect(@result.class).to eq ComicTitle
     end
     it 'returns content' do
-      pp @result
+      # pp @result
       expect(@result.id).to be_truthy
       expect(@result.content).to be_truthy
       expect(@result[:title]).to be_truthy
@@ -183,7 +183,7 @@ describe MediaArtsDb::Comic::FindComic do
       expect(@result.class).to eq Comic
     end
     it 'returns content' do
-      pp @result
+      # pp @result
       expect(@result.id).to be_truthy
       expect(@result.content).to be_truthy
       expect(@result[:title]).to be_truthy
@@ -206,7 +206,7 @@ describe MediaArtsDb::Comic::FindMagazineWork do
       expect(@result.class).to eq MagazineWork
     end
     it 'returns content' do
-      pp @result
+      # pp @result
       expect(@result.id).to be_truthy
       expect(@result.content).to be_truthy
       expect(@result[:title]).to be_truthy
@@ -229,7 +229,7 @@ describe MediaArtsDb::Comic::FindMagazineTitle do
       expect(@result.class).to eq MagazineTitle
     end
     it 'returns content' do
-      pp @result
+      # pp @result
       expect(@result.id).to be_truthy
       expect(@result.content).to be_truthy
       expect(@result[:title]).to be_truthy
@@ -252,7 +252,7 @@ describe MediaArtsDb::Comic::FindMagazine do
       expect(@result.class).to eq Magazine
     end
     it 'returns content' do
-      pp @result
+      # pp @result
       expect(@result.id).to be_truthy
       expect(@result.content).to be_truthy
       expect(@result[:sub_title]).to be_truthy
@@ -275,7 +275,7 @@ describe MediaArtsDb::Comic::FindAuthor do
       expect(@result.class).to eq Author
     end
     it 'returns content' do
-      pp @result
+      # pp @result
       expect(@result.id).to be_truthy
       expect(@result.content).to be_truthy
       expect(@result[:name]).to be_truthy
@@ -298,7 +298,7 @@ describe MediaArtsDb::Comic::FindMaterial do
       expect(@result.class).to eq Material
     end
     it 'returns content' do
-      pp @result
+      # pp @result
       expect(@result.id).to be_truthy
       expect(@result.content).to be_truthy
       expect(@result[:title]).to be_truthy
@@ -321,7 +321,7 @@ describe MediaArtsDb::Comic::FindOriginalPicture do
       expect(@result.class).to eq OriginalPicture
     end
     it 'returns content' do
-      pp @result
+      # pp @result
       expect(@result.id).to be_truthy
       expect(@result.content).to be_truthy
       expect(@result[:title]).to be_truthy
@@ -333,7 +333,6 @@ describe MediaArtsDb::Comic::FindOriginalPicture do
     end
   end
 end
-=end
 
 describe MediaArtsDb::Comic::FindBooklet do
   describe '#execute' do
@@ -345,7 +344,7 @@ describe MediaArtsDb::Comic::FindBooklet do
       expect(@result.class).to eq Booklet
     end
     it 'returns content' do
-      pp @result
+      # pp @result
       expect(@result.id).to be_truthy
       expect(@result.content).to be_truthy
       expect(@result[:title]).to be_truthy
@@ -357,3 +356,4 @@ describe MediaArtsDb::Comic::FindBooklet do
     end
   end
 end
+# =end
