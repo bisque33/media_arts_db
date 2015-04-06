@@ -53,7 +53,7 @@ option.target_comic
 option.option_title = 'さくら'
 # SearchクラスにSearchOptionBuilderを渡す。per:, page:の指定も可能
 search = MediaArtsDb::Comic::Search.new(option)
-@result = search.execute
+result = search.execute
 # => 検索結果は、targetの設定により以下が返る
 # - option.target_comicの場合、Comic(マンガ単行本情報)の配列が返る
 # - option.target_magazineの場合、Magazine(マンガ雑誌情報)の配列が返る
