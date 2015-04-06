@@ -4,14 +4,13 @@ require "addressable/template"
 module MediaArtsDb
   class HttpBase
     class << self
-      def http_get(uri, query = nil)
-        uri_obj = if query
+      def get(uri, query = nil)
+        uri_obj = if query.nil?
+                    Addressable::URI.parse(uri)
+                  else
                     template = Addressable::Template.new("#{uri}{?query*}")
                     template.expand(query)
-                  else
-                    Addressable::URI.parse(uri)
                   end
-        # p uri_obj
         request(uri_obj)
       end
 
@@ -28,7 +27,7 @@ module MediaArtsDb
 
       def response_error(response)
         # 未実装
-        nil
+        false
       end
     end
   end

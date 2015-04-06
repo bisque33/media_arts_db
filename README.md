@@ -25,65 +25,92 @@ Or install it yourself as:
 ### Comic
 
 Search and find the information from the Comic Database.
-(「マンガ」データベースから情報を検索したり見つけたりします。)
+
+検索方法
 
 ```ruby
 # 作品名(TITLE)で検索
-results = MediaArtsDb::Comic.search_by_keyword title: 'カードキャプター'
-# => 検索結果は、comic_works_id(マンガ単行本作品情報のID) または magazine_works_id(マンガ雑誌作品情報のID) が返る
+search = MediaArtsDb::Comic::SearchWork.new('カードキャプター')
+search.execute
+# => 検索結果は、ComicWork(マンガ単行本作品情報)とMagazineWork(マンガ雑誌作品情報)が混在する配列が返る
 
 # 雑誌名(MAGAZINE)で検索
-results = MediaArtsDb::Comic.search_by_keyword magazine: 'なかよし'
-# => 検索結果は、magazine_titles_id(マンガ雑誌基本情報のID) が返る
+search = MediaArtsDb::Comic::SearchMagazine.new('なかよし', per: 10, page: 2)
+search.execute
+# => 検索結果は、MagazineTitle(マンガ雑誌基本情報)の配列が返る（11-20件目）
 
 # 著者名(AUTHOR)で検索
-results = MediaArtsDb::Comic.search_by_keyword author: 'CLAMP'
-# => 検索結果は、author_id(著者情報のID) または magazine_works_id(マンガ雑誌作品情報のID) が返る
-```
+search = MediaArtsDb::Comic::SearchAuthor.new('CLAMP')
+search.execute
+# => 検索結果は、Author(著者情報)の配列が返る
 
-```ruby
 # 単行本・雑誌・資料(SOURCE)で検索
-# キーワード引数 targer: は、どの結果を取得するかを指定する。使用できる定数はMediaArtsDb::ComicSearchOption::TARGET_XXX に定義されている。省略した場合は「単行本」となる
-# キーワード引数 options: は、検索条件を指定する。使用できるオプションは MediaArtsDb::ComicSearchOption に定義されている
-target = MediaArtsDb::ComicSearchOption::TARGET_COMIC
-options = { MediaArtsDb::ComicSearchOption::TITLE => 'カードキャプター' }
-results = MediaArtsDb::Comic.search_by_source target: target, options: options
-# => 検索結果は、targetにより以下が返る
-# - TARGET_BOOKの場合、comic_id(マンガ単行本情報のID)
-# - TARGET_MAGAZINEの場合、magazine_id(マンガ雑誌情報のID)
-# - TARGET_MATERIALの場合、material_id(資料情報のID)
-# - TARGET_ORIGINAL_PICTUREの場合、original_picture_id(マンガ原画情報のID)
-# - TARGET_BOOKLETの場合、booklet_id(その他冊子情報のID)
+# まず検索条件を指定するためにSearchOptionBuilderクラスにパラメータを設定する
+# .target_xxxはどの検索結果を取得するかの設定で、必須項目
+# .option_xxxは検索条件で、サイトの制限により最大5個まで設定できる。また、条件を削除する場合はnilを代入する
+option = MediaArtsDb::Comic::SearchOptionBuilder.new
+option.target_comic
+option.option_title = 'さくら'
+# SearchクラスにSearchOptionBuilderを渡す。per:, page:の指定も可能
+search = MediaArtsDb::Comic::Search.new(option)
+result = search.execute
+# => 検索結果は、targetの設定により以下が返る
+# - option.target_comicの場合、Comic(マンガ単行本情報)の配列が返る
+# - option.target_magazineの場合、Magazine(マンガ雑誌情報)の配列が返る
+# - option.target_materialの場合、Material(資料情報)の配列が返る
+# - option.target_original_pictureの場合、OriginalPicture(マンガ原画情報)の配列が返る
+# - option.target_bookletの場合、Booklet(その他冊子情報)の配列が返る
 ```
 
-```ruby
-# comic_works(マンガ単行本作品情報)の詳細情報取得
-result = MediaArtsDb::Comic.find_comic_works(comic_works_id)
-# book_titles(マンガ単行本全巻情報)の詳細情報取得
-result = MediaArtsDb::Comic.find_comic_titles(comic_titles_id)
-# book(マンガ単行本情報)の詳細情報取得
-result = MediaArtsDb::Comic.find_comic(comic_id)
-# comic_works(マンガ雑誌作品情報)の詳細情報取得
-result = MediaArtsDb::Comic.find_magazine_works(magazine_works_id)
-# book_titles(マンガ雑誌全巻情報)の詳細情報取得
-result = MediaArtsDb::Comic.find_magazine_titles(magazine_titles_id)
-# book(マンガ雑誌情報)の詳細情報取得
-result = MediaArtsDb::Comic.find_magazine(magazine_id)
-# book(著者情報)の詳細情報取得
-result = MediaArtsDb::Comic.find_author(author_id)
-# book(資料情報)の詳細情報取得
-result = MediaArtsDb::Comic.find_material(material_id)
-# book(原画情報)の詳細情報取得
-result = MediaArtsDb::Comic.find_original_picture(original_picture_id)
-# book(その他冊子情報)の詳細情報取得
-result = MediaArtsDb::Comic.find_booklet(booklet_id)
-```
+検索結果の取得
 
 ```ruby
-# ページング
-# search_by_keyword / search_by_source / find_book_titles はキーワード引数 :per :page にて検索結果の件数指定やページ指定が可能
-# :per の既定は100、:page の既定は1
-MediaArtsDb::Comic.search_by_keyword title: 'カードキャプター', per: 10, page: 2 # => 11〜20件目の検索結果
+# 検索
+search = MediaArtsDb::Comic::SearchWork.new('カードキャプター')
+results = search.execute
+# 値の取得
+results.first.title
+results.first[:title] # キーワードでも取得可能
+# すべての値の取得
+results.first.content # 詳細ページから全ての情報を取得して返す
+results.first.content_cache # 検索結果で得られた情報のみを返す
+# 結果のネスト
+results.first.comic_titles[0].comics[0].published_date
+```
+
+個別要素の検索
+
+```ruby
+# ComicWork(マンガ単行本作品情報)の詳細情報取得
+finder = MediaArtsDb::Comic::FindComicWork.new(comic_work_id)
+finder.execute
+# ComicTitle(マンガ単行本全巻情報)の詳細情報取得
+finder = MediaArtsDb::Comic::FindComicTitle.new(comic_title_id)
+finder.execute
+# Comic(マンガ単行本情報)の詳細情報取得
+finder = MediaArtsDb::Comic::FindComic.new(comic_id)
+finder.execute
+# MagazineWork(マンガ雑誌作品情報)の詳細情報取得
+finder = MediaArtsDb::Comic::FindMagazineWork.new(magazine_works_id)
+finder.execute
+# MagazineTitle(マンガ雑誌全巻情報)の詳細情報取得
+finder = MediaArtsDb::Comic::FindMagazineTitle.new(magazine_titles_id)
+finder.execute
+# Magazine(マンガ雑誌情報)の詳細情報取得
+finder = MediaArtsDb::Comic::FindMagazine.new(magazine_id)
+finder.execute
+# Author(著者情報)の詳細情報取得
+finder = MediaArtsDb::Comic::FindAuthor.new(author_id)
+finder.execute
+# Material(資料情報)の詳細情報取得
+finder = MediaArtsDb::Comic::FindMaterial.new(material_id)
+finder.execute
+# OriginalPicture(原画情報)の詳細情報取得
+finder = MediaArtsDb::Comic::FindOriginalPicture.new(original_picture_id)
+finder.execute
+# Booklet(その他冊子情報)の詳細情報取得
+finder = MediaArtsDb::Comic::FindBooklet.new(booklet_id)
+finder.execute
 ```
 
 ### Animation
